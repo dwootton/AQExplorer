@@ -1,5 +1,8 @@
-/* Custom Styles */
-/* Switch CSS*/
+/* ---------------------------------------------------
+    Switch Styles
+		obtained  in part from:
+		https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_switch
+----------------------------------------------------- */
 .switch {
   position: relative;
   display: inline-block;
@@ -41,11 +44,7 @@
   margin-left: 155px;
   margin-right: 55px;
 }
-/*
-#plots {
-  margin-left: 50px;
-}
-*/
+
 .slider:before {
   position: absolute;
   content: "";
@@ -77,10 +76,15 @@ input:checked+.slider:before {
   margin-left: 650px;
 }
 
-/* End Slider code obtained from: https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_switch */
+/* Slider code  */
+/* ---------------------------------------------------
+    navBar Styles
+----------------------------------------------------- */
+.text-center {
+  margin-top: auto;
+  margin-bottom: auto;
+}
 
-
-/* Navbar button */
 #sidebarCollapse {
   background-color: #006837;
   border-color: #014c29;
@@ -123,11 +127,7 @@ a:focus {
   outline: none !important;
   border: none;
 }
-/*
-.container .custom-container {
-  margin: 50px;
-}
-*/
+
 /* ---------------------------------------------------
     SIDEBAR STYLE
 ----------------------------------------------------- */
@@ -261,10 +261,9 @@ a.article:hover {
 /* ---------------------------------------------------
     interpolatedChart Styles
 ----------------------------------------------------- */
-
 #lineMap {
   height: 300px;
-  width: 705px;
+  width: 930px;
   border: 1px dashed #999;
   overflow-y: scroll;
   overflow-x: scroll;
@@ -281,6 +280,13 @@ a.article:hover {
   display: inline-block;
 }
 
+#mapLegend {
+  font-family: Arial, sans-serif;
+  background: #fff;
+  padding: 10px;
+  margin: 10px;
+}
+
 /* Sensor */
 .sensors,
 .sensors svg {
@@ -292,6 +298,7 @@ a.article:hover {
   height: 24px;
   font: 10px sans-serif;
 }
+
 .sensors svg .selected {
   width: 45px;
   height: 45px;
@@ -306,7 +313,6 @@ a.article:hover {
   width: 45px;
   height: 45px;
 }
-
 
 .marker {
   z-index: 5;
@@ -327,10 +333,12 @@ a.article:hover {
   z-index: 1000;
 }
 
-.mapTooltip::after { /* Makes a triangle at the boottom of tooltip*/
+.mapTooltip::after {
+  /* Makes a triangle at the boottom of tooltip*/
   content: " ";
   position: absolute;
-  top: 100%; /* At the bottom of the tooltip */
+  top: 100%;
+  /* At the bottom of the tooltip */
   left: 40%;
   margin-left: -5px;
   border-width: 9px;
@@ -358,14 +366,14 @@ a.article:hover {
 }
 
 .pathHighlight {
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
   font: 10px sans-serif;
   z-index: 100000000000000000000;
 }
 
 /* The legend of the map */
-#legend {
+#pm25Legend {
   width: 225px;
   display: inline-block;
   margin-left: -20px;
@@ -377,7 +385,7 @@ a.article:hover {
 ----------------------------------------------------- */
 #timeChart {
   height: 450px;
-  width: 100%; /* eight="450" width="1230"*/
+  width: 100%;
 }
 
 .zoom {
@@ -385,10 +393,12 @@ a.article:hover {
   fill: none;
   pointer-events: all;
 }
+
 .sensorLine {
   fill: none;
   clip-path: url(#clip);
 }
+
 .modelLine {
   stroke-dasharray: 2;
   fill: none;
@@ -399,7 +409,7 @@ a.article:hover {
   position: absolute;
   text-align: center;
   width: 65px;
-  height: 50px;
+  height: 70px;
   padding: 2px;
   font: 12px sans-serif;
   background: whitesmoke;
@@ -407,10 +417,13 @@ a.article:hover {
   border-radius: 8px;
   pointer-events: none;
 }
-.HMtooltip::after { /* Makes a triangle at the boottom of tooltip*/
+
+.HMtooltip::after {
+  /* Makes a triangle at the boottom of tooltip*/
   content: " ";
   position: absolute;
-  top: 100%; /* At the bottom of the tooltip */
+  top: 100%;
+  /* At the bottom of the tooltip */
   left: 40%;
   margin-left: -5px;
   border-width: 9px;

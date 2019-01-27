@@ -1,329 +1,284 @@
+/**
+ * @file Selector
+ * @author Dylan Wootton <me@dylanwootton.com>
+ * @version 0.2
+ */
+
 class Selector {
-	/**
-	* Creates a selector object
-	*
-	*/ 
-	constructor(myMap, chart){
-		this.startDate = new Date();
-		this.endDate = new Date();
-		this.selectedDate = new Date();
-		this.dataMap = myMap;
-		this.timeChart = chart;
-		this.fullData = null;
+  /**
+   * Creates a selector object
+   *
+   */
+  constructor() {
+    this.startDate = new Date();
+    this.endDate = new Date();
+    this.selectedDate = new Date();
+    this.dataMap = window.controller.map;
+    this.timeChart = window.controller.timeChart;
+    this.sensorSource = "airU";//"airU"
+    this.rendered = false;
 
-		this.getSensorInformation();
+    this.populateSensorList();
 
+    $(()=> {
+      /* Set up the time selector UI */
+      $('input[name="datetimes"]').daterangepicker({
+          timePicker: true,
+          startDate: moment().startOf('hour').subtract(36, 'hour'),
+          endDate: moment().startOf('hour'),
+          locale: {
+            format: 'M/DD hh:mm A'
+          }
+        },
+        /* Callback for when dates are selected on the picker */
+        (start, end) => {
+          // Update timechart label
+          $('#reportrange span').html(start.format('D MMMM YYYY') + ' - ' + end.format('D MMMM YYYY'));
 
-		let that = this;
+          this.startDate = new Date(start.format());
+          this.endDate = new Date(end.format());
 
-		$(function() {
-		  $('input[name="datetimes"]').daterangepicker({
-		    timePicker: true,
-		    startDate: moment().startOf('hour').subtract(36,'hour'),
-		    endDate: moment().startOf('hour'),
-		    locale: {
-		      format: 'M/DD hh:mm A'
-		    }
-		  }, 
-		  (start, end) => {
-	        console.log("Callback has been called!");
-	        $('#reportrange span').html(start.format('D MMMM YYYY') + ' - ' + end.format('D MMMM YYYY'));
-	        that.startDate = new Date(start.format());
-	        that.endDate = new Date(end.format()); 
+          window.controller.startDate = new Date(start.format());
+          window.controller.endDate = new Date(end.format());
 
-	        window.controller.startDate = new Date(start.format());
-	        window.controller.endDate = new Date(end.format());
+          // select the middle timepoint as default render
+          this.selectedDate = new Date((this.startDate.getTime() + this.endDate.getTime()) / 2);
 
-	        that.selectedDate =  new Date((that.startDate.getTime() + that.endDate.getTime()) / 2);
-	        console.log("CHECKOUT: " ,that.endDate.toISOString().slice(0,10).replace(/-/g,""))
-	        document.getElementById("startDate").textContent= formatDate(that.startDate) + " t"
-	        document.getElementById("stopDate").textContent= "o " + formatDate(that.endDate);
-	        
-	        that.getRange()
-	        let sensorData = that.grabSensorData("S-A-085");
-	        console.log('final!', that.grabAllSensorData(that.selectedDate));
-	        that.modelData = that.grabAllModelData(that.selectedDate,10,10);
-	        
-	       });
-		});
-	}
+          /* Update the date display in the navBar */
+					document.getElementById("dateDisplay").textContent = "to";
+          document.getElementById("startDate").textContent = formatDate(this.startDate)
+          document.getElementById("stopDate").textContent =  formatDate(this.endDate);
 
-	async getSensorInformation(){
-		console.log("SENSOR INFO CALLED")
-		let url = "http://air.eng.utah.edu/dbapi/api/liveSensors/airU";
-		//let url = "http://air.eng.utah.edu/dbapi/api/sensorsAtTime/airU&2019-01-04T22:00:00Z"
-		let req = fetch(url)
-
-
-		let that = this;
-		req.then((response) => {
-			console.log("SENSOR INFO CALLED",response)
-			return response.text();
-		})
-		.then((myJSON) => {
-			console.log("Inside of Sensor info",myJSON)
-			myJSON = JSON.parse(myJSON);
-			let sensors = [];
-			for(let i = 0; i < myJSON.length; i++){
-				let val = {
-					id:myJSON[i].ID,
-					lat:myJSON[i].Latitude,
-					long:myJSON[i].Longitude
-
-				};
-				sensors.push(val)
-
-			}
-			console.log(sensors);
-			that.sensorList = sensors;
-
-		});
-	}	
-
-	getRange(){
-		return [this.startDate,this.endDate];
-	}
-
-	async grabSensorData(selectedSensor){
-		console.log("SELECTED SENSOR:", selectedSensor);
-		//let id = "S-A-085";// Ex id: S-A-085
-		if(!selectedSensor.id){
-			return;
-		}
-		let id = selectedSensor.id;
-		console.log(selectedSensor);
-		let fullData = {}
-		
-		let url = "https://www.air.eng.utah.edu/dbapi/api/rawDataFrom?id="+id+"&sensorSource=airu&start=" + this.startDate.toISOString() + "&end=" + this.endDate.toISOString()+ "&show=pm25";
-		let req = this.getDataFromDB("https://www.air.eng.utah.edu/dbapi/api/rawDataFrom?id="+id+"&sensorSource=airu&start=" + this.startDate.toISOString() + "&end=" + this.endDate.toISOString()+ "&show=pm25")
-
-		this.sensorData = await req;
-
-		// Grab Model Data //
-		let modelData = this.grabModelData(selectedSensor, this.sensorData);
-		
-			
-	}
-
-	async grabModelData(selectedSensor,sensorData){
-		let start = this.startDate.toISOString().slice(0,-5)+"Z";
-		let stop = this.endDate.toISOString().slice(0,-5)+"Z";
-
-		let lat = selectedSensor.lat;
-		let long = selectedSensor.long;
-
-		let modelURL = "https://air.eng.utah.edu/dbapi/api/getEstimatesForLocation?location_lat="+lat+"&location_lng="+long+"&start="+start + "&end=" + stop;
-		let modelReq = fetch(modelURL).then(function(response){ 
-			console.log(response);
-				         return response.text();
-				}).catch((err)=>{
-					console.log(err);
-				});
-
-
-		this.modelData = JSON.parse(await modelReq);
-
-
-
-		console.log("GOt here!", sensorData);
-		this.timeChart.update(sensorData, this.modelData, selectedSensor)
-	}
-
-	async grabAllSensorData(time){ // TODO: Add in 'get closest time' and extend the readings by an hour each side
-		let closestStartDate = new Date(time);
-		closestStartDate.setMinutes(time.getMinutes() + 10);
-
-		let that = this;
-		//let sensorMapData = Array.from(this.sensorList);
-		this.sensorMapData =[];
-
-		// grab the most recent values for each sensor
-		let promises = [];
-		for(let i = 0; i < this.sensorList.length; i++){
-			let sensorID = this.sensorList[i].id;
-			let sensorLat = this.sensorList[i].lat;
-			let sensorLong = this.sensorList[i].long;
-			let url = "https://www.air.eng.utah.edu/dbapi/api/rawDataFrom?id="+sensorID+"&sensorSource=airu&start=" + time.toISOString() + "&end=" + closestStartDate.toISOString()+ "&show=pm25"
-				promises[i] = fetch(url).then(function(response){ 
-				         return response.text();
-				}).catch((err)=>{
-					console.log(err);
-				});
-
-			/*
-			let req = this.getDataFromDB("https://www.air.eng.utah.edu/dbapi/api/rawDataFrom?id="+sensorID+"&sensorSource=airu&start=" + time.toISOString() + "&end=" + closestStartDate.toISOString()+ "&show=pm25")
-			req.then((sensorData)=> {
-				console.log(sensorData);
-				
-				that.sensorMapData.push({
-					id:sensorID,
-					lat:sensorLat,
-					long:sensorLong,
-					pm25:sensorData[0]
-				})
-				*/
-			}
-			Promise.all(promises.map(p => p.catch(() => undefined)))
-
-		Promise.all(promises).then(values =>{
-			console.log("INSIDE OF PROMISES")
-			let parsedVals = [];
-			for(let i = 0; i< values.length; i++){
-				let sensorID = this.sensorList[i].id;
-				let sensorLat = this.sensorList[i].lat;
-				let sensorLong = this.sensorList[i].long;
-				let readings = JSON.parse(values[i]).data
-				if(readings[0]){
-					let obj = {
-						id:sensorID,
-						lat:sensorLat,
-						long:sensorLong,
-						pm25:readings[0].pm25
-					};
-					parsedVals.push(obj) 
-				} else {
-					let obj = {
-						id:sensorID,
-						lat:sensorLat,
-						long:sensorLong,
-						pm25:-1
-					};
-					parsedVals.push(obj) 
-				}
-			}
-		    this.sensorData = parsedVals;
-		    this.updateSensorViews();
-		    return values;
-		});
-	}
-		
-
-
-	async grabAllModelData(time){
-
-		let closestStartDate = new Date(time);
-		closestStartDate.setMinutes(time.getMinutes() + 5);
-
-		//let latArr = linSpace(40.598850,40.810476,xReadings);
-		//let longArr = linSpace(-111.818403,-112.001349,yReadings); //Note the second long value had to be increased otherwise, it gave an error.
-		let promises = [];
-		this.modelVals = []; // Generates xReadings by yReadings matrix to fill
-		let that = this;
-		let start = time.toISOString().slice(0,-5)+"Z";
-		let stop = closestStartDate.toISOString().slice(0,-5)+"Z";
-		console.log('start', start);
-		console.log('stop', stop);
-		let sitesArray = [];
-		let i = 0;
-		let url = "https://air.eng.utah.edu/dbapi/api/getGridEstimates?start="+start+"&end=" +stop;
-		
-		let modelReq = fetch(url).then(function(response){ 
-			console.log(response);
-				         return response.text();
-				}).catch((err)=>{
-					console.log(err);
-				});
-
-		let allModelData = JSON.parse(await modelReq)[1];
-
-		for (time in allModelData) {
-		    this.modelData = allModelData[time].pm25;
-		}
-
-		this.updateViews();
-		/*
-		for (let [longIndex, long] of longArr.entries()){
-			for (let [latIndex, lat] of latArr.entries()){
-				let url = "https://air.eng.utah.edu/dbapi/api/getEstimatesForLocation?location_lat="+lat+"&location_lng="+long+"&start="+start + "&end=" + stop;
-				promises[i] = fetch(url).then(function(response){ 
-				         return response.text();
-				}).catch((err)=>{
-					console.log(err);
-				});
-				"https://air.eng.utah.edu/dbapi/api/getGridEstimates&start=2018-12-01T00:00:00Z&end=2018-12-02T00:00:00Z"
-				//let req = this.getDataFromDB(url)
-				//req.then((modelData)=> {
-				//	that.modelVals.push(modelData[0].pm25);
-				//})
-				//promises.push(req);
-				i++;
-			}
-		}
-		*/
-		/*
-		Promise.all(promises.map(p => p.catch(() => undefined)))
-
-		Promise.all(promises).then(values =>{
-			let parsedVals = [];
-			for(let i = 0; i< values.length; i++){
-				parsedVals.push(JSON.parse(values[i])[0].pm25) 
-			}
-		    that.modelData = values;
-		    this.modelData = parsedVals;
-		    this.updateViews();
-		    return values;
-		});
-		*/
-
-
-		// Mine: https://air.eng.utah.edu/dbapi/api/getEstimatesForLocation?location_lat=40.645877999999996&location_lng=-111.93736100000001&start=2018-12-13T16:00:00.000Z&end=2018-12-13T16:10:00.000Z
-		// Mine: https://air.eng.utah.edu/dbapi/api/getEstimatesForLocation?location_lat=40.645877999999996&location_lng=-111.93736100000001&start=2018-12-12T16:00:00Z&end=2018-12-13T16:10:00Z
-		// AQaU: https://air.eng.utah.edu/dbapi/api/getEstimatesForLocation?location_lat=40.78756024557722&location_lng=-111.84837341308594&start=2018-07-08T15:26:05Z&end=2018-07-09T15:26:05Z
-
-
-		//  bottomLeftCorner = {'lat': 40.598850, 'lng': -112.001349}
-    	// topRightCorner = {'lat': 40.810476, 'lng': -111.713403}
-
-	}
-
-	updateViews() {
-		this.dataMap.updateModel(this.modelData);
-
-	}
-
-	updateSensorViews(){
-		window.controller.sensorData = this.sensorData;
-		this.dataMap.updateSensor(this.sensorData)
-	}
-
-	getDataFromDB(anURL) { 
-	  return new Promise((resolve, reject) => {
-	    const method = 'GET';
-	    const async = true;
-	    const request = new XMLHttpRequest();
-
-	    request.open(method, anURL, async); // true => request is async
-
-	    // If the request returns succesfully, then resolve the promise
-	    request.onreadystatechange = function processingResponse() {
-	      if (request.readyState === 4 && request.status === 200) {
-	        const response = JSON.parse(request.responseText);
-	        resolve(response);
-	      }
-
-	      // If request has an error, then reject the promise
-	      request.onerror = function showWarning(e) {
-	        console.log('Something went wrong....');
-	        reject(e);
-	      };
-	    };
-	    request.send();
-	  });
-	}
-
-
-}
-
-function linSpace(startValue, stopValue, cardinality) {
-  var arr = [];
-  var currValue = startValue;
-  var step = (stopValue - startValue) / (cardinality - 1);
-  for (var i = 0; i < cardinality; i++) {
-    arr.push(currValue + (step * i));
+          this.grabAllSensorData(this.selectedDate);
+          this.modelData = this.grabAllModelData(this.selectedDate, 10, 10);
+          this.rendered = true;
+        });
+    });
   }
-  return arr;
+
+  /**
+   * Determines which sensors are active and stores active sensors
+   * in sensorList.
+   *
+   */
+  async populateSensorList() {
+    let url = "http://air.eng.utah.edu/dbapi/api/liveSensors/"+this.sensorSource;
+    //let url = "http://air.eng.utah.edu/dbapi/api/sensorsAtTime/airU&2019-01-04T22:00:00Z"
+    let req = fetch(url)
+
+    /* Adds each sensor to this.sensorList */
+    req.then((response) => {
+        return response.text();
+      })
+      .then((myJSON) => {
+        myJSON = JSON.parse(myJSON);
+        let sensors = [];
+        for (let i = 0; i < myJSON.length; i++) {
+          let val = {
+            id: myJSON[i].ID,
+            lat: myJSON[i].Latitude,
+            long: myJSON[i].Longitude
+          };
+          sensors.push(val)
+        }
+        this.sensorList = sensors;
+      });
+  }
+
+  changeSource(){
+
+    if(this.sensorSource == "airU"){
+      return "airu";
+    } else if(this.sensorSource == "all") {
+      if(this.selectedSensor[0]=="S"){ //if AirU sensor was selected
+        return "airu"
+      } else {
+        return "Purple Air";
+      }
+    } else {
+      return "Purple Air";
+    }
+  }
+
+  /**
+   * Grabs a individuals sensors pm25 data for the time inbetween startDate and
+   * endDate. Updates this.sensorData and calls this.grabModelData.
+   * @param  {[type]}  selectedSensor The sensor object to fetch data from.
+   */
+  async grabIndividualSensorData(selectedSensor) {
+    //let id = "S-A-085";// Ex id: S-A-085
+    if (!selectedSensor.id) {
+      return;
+    }
+    let start = this.startDate.toISOString().slice(0, -5) + "Z";
+    let stop = this.endDate.toISOString().slice(0, -5) + "Z";
+
+    let id = selectedSensor.id;
+    this.selectedSensor = selectedSensor;
+    let processed = true;
+    var numDaysBetween = function(d1, d2) {
+      var diff = Math.abs(d1.getTime() - d2.getTime());
+      return diff / (1000 * 60 * 60 * 24);
+    };
+    let url;
+    let timeInterval = numDaysBetween(this.startDate,this.endDate);
+    this.generateModelData = true;
+
+    if(timeInterval > 2){ // if time difference is
+      let changedSource = this.changeSource();
+      url = "https://air.eng.utah.edu/dbapi/api/processedDataFrom?id=" + id + "&sensorSource=" + changedSource + "&start=" +start + "&end=" +stop + "&function=mean&functionArg=pm25&timeInterval=5m"
+      //https://air.eng.utah.edu/dbapi/api/processedDataFrom?id=S-A-085&sensorSource=airu&start=2019-01-20T01:08:40Z&end=2019-01-27T01:08:40Z&function=mean&functionArg=pm25&timeInterval=5m
+      console.log(url)
+      if(timeInterval > 7){
+        this.generateModelData = false;
+      }
+    } else {
+      url = "https://www.air.eng.utah.edu/dbapi/api/rawDataFrom?id=" + id + "&sensorSource="+this.sensorSource.toLowerCase()+"&start=" + start + "&end=" + stop + "&show=pm25";
+    }
+    // Note: sensor source must be lowercase for the API.
+
+    // WORKS: https://air.eng.utah.edu/dbapi/api/processedDataFrom?id=S-A-085&sensorSource=airu&start=2019-01-20T01:08:40Z&end=2019-01-27T01:08:40Z&function=mean&functionArg=pm25&timeInterval=5m
+    //https://air.eng.utah.edu/dbapi/api/processedDataFrom?id=1010&sensorSource=Purple Air&start=2019-01-20T01:08:40Z&end=2019-01-27T01:08:40Z&function=mean&functionArg=pm25&timeInterval=5m
+
+    // /api/processedDataFrom?id=1010&sensorSource=airu&start=2017-10-01T00:00:00Z&end=2017-10-02T00:00:00Z&function=mean&functionArg=pm25&timeInterval=30m
+    //let url = "air.eng.utah.edu/dbapi/api/rawDataFrom?id=S-A-085&sensorSource=airu&start=2018-03-01T00:00:00Z&end=2018-03-13T00:00:00Z&show=all"
+    //let url = "air.eng.utah.edu/dbapi/api/rawDataFrom?id=S-A-069&sensorSource=airu&start=2019-01-18T12:00:00Z&end=2019-01-20T00:00:00Z&show=pm25
+    console.log(url);
+    let req = fetch(url)
+
+    /* Processes sensor data and het model data */
+    req.then((response) => {
+      //console.log(response.text())
+        return response.text();
+      })
+      .then((myJSON) => {
+        myJSON = JSON.parse(myJSON);
+        this.individualSensorData = myJSON;
+        console.log("INDIV",this.individualSensorData)
+        if(this.generateModelData){
+          let modelData = this.grabModelData(selectedSensor);
+        } else {
+          this.timeChart.update(this.individualSensorData,this.individualSensorData , selectedSensor)
+        }
+      });
+  }
+
+  async grabModelData(selectedSensor) {
+    let start = this.startDate.toISOString().slice(0, -5) + "Z";
+    let stop = this.endDate.toISOString().slice(0, -5) + "Z";
+
+    let lat = selectedSensor.lat;
+    let long = selectedSensor.long;
+
+    let modelURL = "https://air.eng.utah.edu/dbapi/api/getEstimatesForLocation?location_lat=" + lat + "&location_lng=" + long + "&start=" + start + "&end=" + stop;
+    let modelReq = fetch(modelURL)
+
+    /* Processes sensor data and het model data */
+    modelReq.then((response) => {
+        return response.text();
+      })
+      .then((myJSON) => {
+        this.modelDataAtSensorLocation = JSON.parse(myJSON);
+        this.timeChart.update(this.individualSensorData, this.modelDataAtSensorLocation, selectedSensor)
+      });
+  }
+
+
+  /**
+   * Obtains 1 pm25 reading from every sensor and re-renders the updates sensors
+   * on the maps
+   *
+   * @param  {[type]}  time Date Time object of the time to grab sensor data from
+   */
+  async grabAllSensorData(time) {
+    /* Sets up a window of time to get pm25 values from */
+    let closestStartDate = new Date(time);
+    closestStartDate.setMinutes(time.getMinutes() + 10);
+
+    /* Obtain the most recent values for each sensor */
+		let formattedTime = time.toISOString().slice(0,-5)+'Z'
+		let url = "http://air.eng.utah.edu/dbapi/api/sensorsAtTime?sensorSource="+this.sensorSource+"&selectedTime=" + formattedTime;
+
+		let req = fetch(url)
+			.then(function(response){
+				return response.text();
+			})
+      .then(values => {
+			let parsedValues = JSON.parse(values);
+
+      /* processes the retrieved data into a format for plotting on map */
+			let valuesFixedAttr = parsedValues.map(function(element){
+				return {
+					id:element.ID,
+					lat:element.Latitude,
+					long:element.Longitude,
+					pm25:element.pm25,
+					source: element['Sensor Source']
+				}
+			})
+
+      /* Update data and re-render map view */
+			this.allSensorsData = valuesFixedAttr;
+			this.updateSensorView();
+		});
+  }
+
+  /**
+   * Gets all of the data values
+   * @param  {[type]}  time [description]
+   * @return {Promise}      [description]
+   */
+  async grabAllModelData(time) {
+    /* Sets up time interval to grab model data from */
+    let start = time.toISOString().slice(0, -5) + "Z";
+    let closestStartDate = new Date(time);
+    closestStartDate.setMinutes(time.getMinutes() + 5);
+    let stop = closestStartDate.toISOString().slice(0, -5) + "Z";
+
+    let url = "https://air.eng.utah.edu/dbapi/api/getGridEstimates?start=" + start + "&end=" + stop;
+
+    /* Obtains model grid estimates and re-render map view */
+    let modelReq = fetch(url).then( (response)=> {
+      return response.text();
+    }).then( (values) => {
+      let allModelData = JSON.parse(values)[1];
+      for (time in allModelData) {
+        this.allModelData = allModelData[time].pm25;
+      }
+      this.updateModelView();
+    })
+  }
+
+  /**
+   * Updates model heatmap
+   */
+  updateModelView() {
+    this.dataMap.updateModel(this.allModelData);
+
+  }
+
+  /**
+   * Updates sensor view on map
+   */
+  updateSensorView() {
+    window.controller.allSensorsData = this.allSensorsData;
+    this.dataMap.updateSensor(this.allSensorsData)
+  }
+
+  setSensorSource(source){
+    this.sensorSource = source;
+    this.populateSensorList();
+    if(this.rendered){
+      this.grabAllSensorData(this.selectedDate);
+    }
+  }
 }
 
+/**
+ * Formats date time object into day month year string.
+ * @param  {[type]} date date time to be converted to string
+ * @return {[type]}      string in order day month year
+ */
 function formatDate(date) {
   var monthNames = [
     "January", "February", "March",
