@@ -10,7 +10,7 @@ class timeChart {
 
 
 		this.margin = {top: 20, right: 5, bottom: 110, left: 30}
-		this.margin2 = {top: 370, right: 5, bottom: 30, left: 30}
+		this.margin2 = {top: 270, right: 5, bottom: 30, left: 30}
 		this.width = +this.svg.node().getBoundingClientRect().width - this.margin.left - this.margin.right
 		this.height = +this.svg.node().getBoundingClientRect().height - this.margin.top - this.margin.bottom
 		this.height2 = +this.svg.node().getBoundingClientRect().height - this.margin2.top - this.margin2.bottom;
@@ -49,11 +49,16 @@ class timeChart {
 		    .attr("height", this.height);
 
 		this.prevMaxValue = 0;
+		this.maxReadings = [];
+		this.sensorIndex = 0;
+		this.stopValues =[];
+
 		this.modelDatas = [];
 		this.sensorDatas = [];
 		this.sensorInfos = [];
 
-
+		this.legend = new timeChartLegend();
+		window.controller.timeChartLegend = this.legend;
 	}
 
 
@@ -102,7 +107,7 @@ class timeChart {
     }
 
     generateColorScale(){
-    	let maxValue = this.prevMaxValue;
+    	let maxValue = this.maxReadings[this.maxReadings.length-1].sensor;
     	console.log(window.controller);
 
     	let pm25Fixed = JSON.parse(JSON.stringify(window.controller.pm25Domain))//.reverse();
@@ -110,8 +115,8 @@ class timeChart {
     	let colorScale = JSON.parse(JSON.stringify(window.controller.colorRange))//.reverse();
 
     	let index = pm25Fixed.findIndex(function(number) {
-			return number > maxValue;
-		});
+				return number > maxValue;
+			});
 
 		console.log(index)
 		console.log(pm25Fixed);
@@ -148,16 +153,22 @@ class timeChart {
 
 		}
 		console.log(this.prevMaxValue);
+		stopValues.pop(0);
+		stopValues[stopValues.length-1].offset = 1.0;
 
-		this.stopValues = stopValues;
-		console.log(this.stopValues);
+		this.stopValues.push(stopValues);
 
-    }
+  }
 
+	updateLegend(){
 
-	update(data,modelData,sensorInfo){
+			this.legend.update(this.sensorInfos);
+	}
 
-		this.refreshChart();
+	addData(data,modelData,sensorInfo){
+		if(this.sensorInfos.includes(sensorInfo)){
+			return;
+		}
 		if(data == modelData){
 			modelData = jQuery.extend(true, {}, data).data;
 			//modelData.data;
@@ -179,9 +190,6 @@ class timeChart {
 			data = data.data;
 		}
 
-
-
-
 		data = data.map(type);
 		console.log(data, modelData);
 		modelData = modelData.map(type);
@@ -189,6 +197,30 @@ class timeChart {
 		this.modelDatas.push(modelData);
 		this.sensorDatas.push(data);
 		this.sensorInfos.push(sensorInfo);
+		this.update();
+	}
+
+	updateGradient(index){
+		console.log(this.stopValues,index);
+		this.svg.append("linearGradient")
+		      .attr("id", "temperature-gradient")
+		      .attr("gradientUnits", "objectBoundingBox")
+		      .attr("x1", 0).attr("y1", 0)
+		      .attr("x2", 0).attr("y2", 1)
+		    .selectAll("stop")
+		      .data(this.stopValues[index])
+		    .enter().append("stop")
+		      .attr("offset", function(d) { return d.offset; })
+		      .attr("stop-color", function(d) { return d.color; });
+	}
+
+	update(){
+		let self = this;
+		let data = this.sensorDatas[this.sensorDatas.length-1];
+		let modelData = this.modelDatas[this.modelDatas.length-1];
+		this.refreshChart();
+
+		this.updateLegend();
 		console.log(this.sensorInfos);
 
 		function brushed() {
@@ -218,6 +250,8 @@ class timeChart {
 		  self.updateSliderZoom();
 		}
 
+
+
 		/*
 	this.svg.append("linearGradient")
 	    .attr("id", "area-gradient")
@@ -235,31 +269,20 @@ class timeChart {
 
       console.log(timeBounds);
 	  this.xScale.domain(timeBounds);
+		/* TODO: FIX To make modulas*/
 
 	  let maxSensorReading = d3.max(data, function(d) { return d.pm25; });
 	  let maxModelEstimate = d3.max(modelData, function(d) { return d.pm25; });
 	  console.log(maxModelEstimate);
+		this.maxReadings.push({
+			sensor:maxSensorReading,
+			model:maxModelEstimate
+		})
 
 	  this.prevMaxValue = d3.max([this.prevMaxValue,maxSensorReading,maxModelEstimate]);
 	  this.generateColorScale();
-	  this.svg.append("linearGradient")
-		      .attr("id", "temperature-gradient")
-		      .attr("gradientUnits", "objectBoundingBox")
-		      .attr("x1", 0).attr("y1", 0)
-		      .attr("x2", 0).attr("y2", 1)
-		    .selectAll("stop")
-		      .data(this.stopValues)
-		    /*	.data([
-			      {offset: "0", color: "red"},
-			      {offset: "0.1", color: "purple"},
-			      {offset: "0.2", color: "black"},
-			      {offset: "0.3", color: "yellow"},
-			      {offset: "0.5", color: "lawngreen"},
-			      {offset: "1.0", color: "lawngreen"}
-			    ])*/
-		    .enter().append("stop")
-		      .attr("offset", function(d) { return d.offset; })
-		      .attr("stop-color", function(d) { return d.color; });
+		this.updateGradient(0);
+
 
 	  this.yScale.domain([0, this.prevMaxValue]);
 	  this.x2Scale.domain(this.xScale.domain());
@@ -283,8 +306,6 @@ class timeChart {
 		    .extent([[0, 0], [this.width, this.height]])
 		    .on("zoom", zoomed);
 
-	//let that = this;
-
 	  for(let i = 0; i < this.sensorDatas.length; i++){
 
 	  	let sensorPaths = this.focus.append("path")
@@ -295,8 +316,6 @@ class timeChart {
 	      .attr('stroke','gray')
 	      .attr('stroke-opacity',0.6)
 	      .attr("id","sensorPath"+this.sensorInfos[i].id);
-	    console.log(sensorPaths);
-
 
 	    let modelPaths = this.focus.append("path")
 	  	  .datum(this.modelDatas[i])
@@ -305,10 +324,9 @@ class timeChart {
 	  	  .attr('stroke-width','2px')
 	  	  .attr('stroke','darkgrey')
 	  	  .attr('stroke-opacity',0.6)
-	  	  .attr("id","sensorPath"+this.sensorInfos[i].id);
+	  	  .attr("id","modelPath"+this.sensorInfos[i].id);
 
 	  	sensorPaths.on("mouseover",function(){
-	  		console.log("IN MOUSEOVER ON PATH!")
 	  		if(that.prevSelection){
 	  			that.prevSelection.attr('stroke-width', 1)
 	  		}
@@ -330,13 +348,6 @@ class timeChart {
 	  }
 
 
-
-
-
-
-
-
-
 	  this.focus.append("g")
 	      .attr("class", "axis axis--x")
 	      .attr("transform", "translate(0," + this.height + ")")
@@ -346,10 +357,12 @@ class timeChart {
 	      .attr("class", "axis axis--y")
 	      .call(this.yAxis);
 
-	  this.context.append("path")
+	  let newLine = this.context.append("path")
 	      .datum(data)
 	      .attr("class", "sensorLine")
 	      .attr("d", this.area2);
+
+		console.log(newLine)
 
 	  this.context.append("g")
 	      .attr("class", "axis axis--x")

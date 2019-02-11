@@ -237,6 +237,7 @@ class AQMap {
 
   setUpSourceMenu(){
     let sensorSourceMenu = document.getElementById('mapLegend');
+    this.myMap.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(sensorSourceMenu);
     var div = document.createElement('div');
     let sourceTypes = ['AirU','Purple Air','All']
     for(var i=0 ; i < sourceTypes.length ; i++)
@@ -279,7 +280,7 @@ class AQMap {
     }
     sensorSourceMenu.appendChild(div);
 
-    this.myMap.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(sensorSourceMenu);
+    //this.myMap.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(sensorSourceMenu);
   }
 
   refreshClick() {
@@ -326,15 +327,26 @@ class AQMap {
     });
   }
 
+  selectSensor(selectedSensor){
+    if(selectedSensor){
+      this.selectedSensor = selectedSensor;
+    }
+    //this.updateSensor(sensorData)
+  }
+
   updateSensor(sensorData) {
+    this.sensorData = sensorData;
     let overlay = new google.maps.OverlayView();
     let that = this;
+    window.controller.sensorOverlay = overlay;
+
 
     // Add the container when the overlay is added to the map.
     overlay.onAdd = function() {
       d3.select(this.getPanes().overlayMouseTarget).selectAll("div").remove();
       let layer = d3.select(this.getPanes().overlayMouseTarget).append("div") // floatPane as I want sensors to be on top
         .attr("class", "sensors");
+      console.log("LAYER",layer);
 
       // Draw each marker as a separate SVG element.
       // We could use a single SVG, but what size would it have?
@@ -348,6 +360,11 @@ class AQMap {
           .attr("fill", (d) => {
             return (that.colorMap(d.pm25))
           })
+          .attr('id', (d)=> {
+            console.log(d);
+            return "marker"+d.id;
+          })
+
 
         marker
           .on("mouseover", function(d) {
@@ -383,28 +400,28 @@ class AQMap {
               .attr('stroke', 'gray')
               .attr('stroke-opacity', 0.6)
           })
-          .on("click", function(event) {
+          .on("click", function(sensor) {
 
             if (that.marker) {
               that.marker.setMap(null);
             }
+            that.selectSensor(sensor);
             //d3.select(this).attr('transform','translate(-30px,-30px)')
-            selector.grabIndividualSensorData(event);
-            d3.select(this).attr("id", "selected");
+            selector.grabIndividualSensorData(sensor);
+            //d3.select(this).attr("id", "selected");
 
-            d3.select(this).selectAll('circle')
+            /*d3.select(this).selectAll('circle')
               //.attr('transform','translate(15px,15px)')
               .transition(500)
               .attr('r', 10)
               .attr('stroke-width', '2')
-              .attr('stroke', 'gold');
-            let lineChartSelector = '#sensorPath' + event.id;
-            console.log(lineChartSelector);
-            console.log(d3.selectAll(lineChartSelector));
+              .attr('stroke', 'gold');*/
+            window.controller.timeChartLegend.changeMapSelectedSensor(sensor);
+            let lineChartSelector = '#sensorPath' + sensor.id;
 
-            if (that.lastSelected && that.lastSelected != this) {
-              d3.select(that.lastSelected).attr("id", null).selectAll('circle').transition(500).attr('r', 6.5).attr('stroke-width', '1').attr('stroke', 'white');
-            }
+            /*if (that.lastSelected && that.lastSelected != this) {
+              d3.select(that.lastSelected).attr("id", "marker"+sensor.id).selectAll('circle').transition(500).attr('r', 6.5).attr('stroke-width', '1').attr('stroke', 'white');
+            }*/
 
             that.lastSelected = this;
             window.controller.sensorClicked = true;
@@ -414,9 +431,13 @@ class AQMap {
         let newMarkers = marker
           .enter().append("svg")
           .each(transform)
+          .attr('id', (d)=> {
+            console.log(d);
+            return "marker"+d.id;
+          })
           .attr("class", "marker");
 
-        marker.exit().remove();
+        newMarkers.exit().remove();
 
         // Add a circle. May be unused?
         newMarkers.append("circle")
@@ -431,6 +452,14 @@ class AQMap {
             }
             return (that.colorMap(d.pm25))
           })
+
+        console.log(this.selectedSensor);
+        if(this.selectedSensor){
+          console.log(d3.select('#marker'+this.selectedSensor.id))
+          d3.select('#marker'+this.selectedSensor.id).dispatch('click');
+        }
+
+
         /*
 		          .classed("hiddenMarker", (d)=> {
 		          	if(d.pm25< 0){
