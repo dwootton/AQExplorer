@@ -1,31 +1,29 @@
 class timeChartLegend {
   constructor() {
-    this.svg = d3.select('#timeChartLegend');
-
+    let boundingWidth = document.getElementById('map').offsetWidth;
     this.margin = {
-      top: 10,
+      top: 0,
       right: 10,
       bottom: 10,
-      left: 10
+      left: 35
     }
+    this.svg = d3.select('#timeChartLegend').append('g').attr('transform','translate('+this.margin.left+','+this.margin.top+')');
+
+    d3.select('#timeChartLegend').attr('height',50);
+    this.svg.attr('height',50);
+
+
+
     this.width = +this.svg.node().getBoundingClientRect().width - this.margin.left - this.margin.right
     this.height = +this.svg.node().getBoundingClientRect().height - this.margin.top - this.margin.bottom
 
+    /*this.svg
+      .attr("viewBox", [0, 0, (this.width + this.margin.right + this.margin.left),
+                        (this.height + this.margin.top + this.margin.bottom)].join(' '))*/
+
+
+    console.log("YOURE WIDTH IS: ",document.getElementById('map').offsetWidth);
     this.plottingSVG = this.svg.append('g').attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
-
-    this.clsbtn1 = new d3CloseButton();
-    this.clsbtn1.size(14).isCircle(true).borderStrokeWidth(3).crossStrokeWidth(3).rx(6).ry(6);
-    let sampleData = [50, 200];
-    /*var gUpper = this.plottingSVG.append("g").selectAll("g").data(sampleData).enter().append("g");
-    let size = 20;
-    gUpper.append("rect")
-            .attr("x", function(d){ return d;})
-            .attr("y", 50)
-            .attr("width", size)
-            .attr("height",size)
-            .style({"fill": "#E6F9FF", "stroke-width": 2, "stroke": "black"});
-
-            */
 
   }
   /**
@@ -34,7 +32,16 @@ class timeChartLegend {
    * @return {[type]}      [description]
    */
   update(info) {
+    let newRowNumber = (info.length / this.itemsPerRow) >> 0;
+    d3.select('#timeChartLegend').transition(2000).attr('height',50+30*newRowNumber);//
+    this.width = +this.svg.node().getBoundingClientRect().width - this.margin.left - this.margin.right
+    this.height = 50+30*newRowNumber - this.margin.top - this.margin.bottom
 
+    if((info.length%this.itemsPerRow) == 0){
+      console.log(this.svg.node().getBoundingClientRect().height)
+    }
+
+    this.sensorItems
     let self = this;
     this.plottingSVG.selectAll('.sensorButton').remove();
     let selection = this.plottingSVG.selectAll('.sensorButton')
@@ -43,7 +50,6 @@ class timeChartLegend {
     selection
       .exit()
       .remove()
-    console.log("plotting", this.plottingSVG);
 
 
     this.sensorItems = selection
@@ -55,40 +61,55 @@ class timeChartLegend {
 
     let barWidth = 75;
     let barHeight = 20;
-
+    this.itemsPerRow = 17;
     /* Adds the background rect  */
     this.sensorItems
       .append('rect')
       .attr('x', (d, i) => {
-        i = i % 11; // After 11 icons have been placed, wrap to the next row
+        i = i%this.itemsPerRow
         return (i) * (barWidth + 20);
       })
-      .attr("y", function(d, i) {
-        let offset = 0;
-        if (i > 10) {
-          offset = 25;
-        }
+      .attr("y", (d, i) => {
+
+        let rowNumber = (i / this.itemsPerRow) >> 0;
+        console.log(rowNumber,this.itemsPerRow)
+        i = i%this.itemsPerRow
+        let offset = 10 + 25*rowNumber;
+        /*if (i == this.itemsPerRow-1) {
+
+        }*/
         return offset;
       })
       .attr('width', barWidth)
       .attr('height', barHeight)
-      .attr('border-radius', 2)
+      .attr('border-radius', (d)=> {
+        if(this.clickedSensor && (d.id == this.clickedSensor.id)){
+          return 4;
+        }
+        return 2
+      })
+      .attr('stroke', (d)=> {
+        if(this.clickedSensor && (d.id == this.clickedSensor.id)){
+          return "black";
+        }
+        return "gray";
+      })
       .attr('fill', 'whitesmoke')
-      .attr('stroke', "gray")
       .attr('rx', 5)
       .attr('ry', 5);
 
 
     this.sensorItems.each((d, i, nodes) => {
+      let column = i%this.itemsPerRow;
+      let row = (i / this.itemsPerRow) >> 0;
+      let g = d3.select(nodes[i]).append('g').attr('class','close')
 
-      let g = d3.select(nodes[i]).append('g')
-        .attr('class', 'close');
 
       let size = 14;
       let r = size / 2,
         ofs = size / 6,
-        x = (i) * (barWidth + 20) + (barWidth / 1.2),
-        y = barHeight / 2,
+        x = (column) * (barWidth + 20) + (barWidth / 1.2),
+        y = 20 + 25*row,
         cross = g.append("g");
 
       g.append("circle")
@@ -117,13 +138,14 @@ class timeChartLegend {
 
 
       d3.selectAll(".close").on('click', (d, i, nodes) => {
-        this.changeMapSelectedSensor();
-        console.log(d, i, nodes);
+        console.log(d);
+        console.log(nodes[i]);
+        if(this.clickedSensor && (d.id == this.clickedSensor.id)){
+          this.changeMapSelectedSensor();
+        }
+        window.controller.selector.selectedSensors = window.controller.selector.selectedSensors.filter(e=>e !== d.id);
+        window.controller.timeChart.removePoint(i);
 
-        window.controller.timeChart.sensorDatas.splice(i, 1);
-        window.controller.timeChart.modelDatas.splice(i, 1);
-        window.controller.timeChart.sensorInfos.splice(i, 1);
-        window.controller.timeChart.update();
         d3.event.stopPropagation();
       })
     })
@@ -133,15 +155,20 @@ class timeChartLegend {
     this.sensorItems
       .append('text')
       .attr('x', (d, i) => {
-        i = i % 11; // After 11 icons have been placed, wrap to the next row
-        return (i) * (barWidth + 20) + 5;
+        i = i%this.itemsPerRow
+        console.log(i);
+        return (i) * (barWidth + 20)+5;
       })
-      .attr("y", function(d, i) {
-        let offset = 2;
-        if (i > 10) {
-          offset = 25;
-        }
-        return offset + barHeight / 2
+      .attr("y", (d, i) => {
+
+        let rowNumber = (i / this.itemsPerRow) >> 0;
+        console.log(rowNumber,this.itemsPerRow)
+        i = i%this.itemsPerRow
+        let offset = 22 + 25*rowNumber;
+        /*if (i == this.itemsPerRow-1) {
+
+        }*/
+        return offset;
       })
       .attr("dy", ".25em")
       .text(function(d) {
@@ -149,87 +176,45 @@ class timeChartLegend {
       })
       .attr('font-size', '.75em')
 
-    this.sensorItems.on('mouseenter', (d) => {
+
+
+
+
+    //}
+
+    this.sensorItems.on('mouseenter', (d,i) => {
+        console.log("IN MOUSE ENTER",d,i);
         let sensorID = d.id;
-        console.log(this);
+        this.highlightPathStroke(sensorID,i);
 
-        let sensorSelection = d3.select('#sensorPath' + sensorID)
-        sensorSelection
-          .transition()
-          .duration(500)
-          .attr('stroke-width', 5)
-          .attr('stroke', 'url(#temperature-gradient)')
-          .attr('stroke-opacity', 1.0)
-        let modelSelection = d3.select('#modelPath' + sensorID)
-        modelSelection
-          .transition()
-          .duration(500)
-          .attr('stroke-width', 5)
-          .attr('stroke', 'black')
-          .attr('stroke-opacity', 1)
-
-
-        this.previousSelected = [sensorSelection, modelSelection];
-
-        sensorSelection.moveToFront();
-
-        modelSelection.moveToFront();
       })
       .on('mouseleave', (d, i, nodes) => {
+        console.log(this.clickedSensor, d.id);
         if (this.clickedSensor && (this.clickedSensor.id == d.id)) {
           return;
         }
-        let sensorID = d.id;
-        console.log(d3.select('#sensorPath' + sensorID));
-        d3.select('#sensorPath' + sensorID)
-          .attr('stroke-opacity', 0.6)
-          .transition()
-          .duration(500)
-          .attr('stroke-width', 1)
-          .attr('stroke', 'gray');
-        let modelSelection = d3.select('#modelPath' + sensorID)
-        modelSelection
-          .transition()
-          .duration(500)
-          .attr('stroke-width', 1)
-          .attr('stroke', 'gray')
-          .attr('stroke-opacity', .6)
+        this.unHighlightPathStroke(d,i,nodes);
+
       })
       .on('click', (d, i, nodes) => {
+        // if sensor is already selected, un select.
+        if(this.clickedSensor && this.clickedSensor.id == d.id){
+          this.changeMapSelectedSensor();
+          this.unHighlightAllSensorButtons()
+          this.clickedSensor = null;
+          window.controller.selectedSensor = null;
+          this.unHighlightPathStroke(d);
+          return;
+        }
+        if(this.clickedSensor){
+          this.unHighlightPathStroke(this.clickedSensor);
+        }
+
+        this.clickedSensor = d;
         this.changeMapSelectedSensor(d);
-        window.controller.timeChart.updateGradient(i);
+        window.controller.selectedSensor = d;
+        this.highlightSensorButton(d.id);
 
-
-        let prevClickedSensor;
-        if (this.clickedSensor) {
-          prevClickedSensor = this.clickedSensor.sensorButton;
-        }
-
-        let sensor = {
-          id: d.id,
-          sensorButton: nodes[i]
-        }
-        // TODO: Fix these dam legends.
-
-        this.clickedSensor = sensor;
-        d3.select(prevClickedSensor).selectAll('rect')
-          .transition()
-          .duration(500)
-          .attr('stroke-width', 1)
-          .attr('stroke', 'gray');
-
-        window.controller.clickedSensor = this.clickedSensor;
-
-        d3.select(prevClickedSensor).dispatch('mouseleave');
-        d3.select(nodes[i]).selectAll('rect')
-          .transition()
-          .duration(200)
-          .attr('stroke', "black")
-          .attr('stroke-width', 4)
-
-
-        d3.select(nodes[i]).selectAll('rect')
-          .dispatch("mouseenter");
       })
       /*.on('mousedown', function(d, i) {
         d3.select(this)
@@ -315,9 +300,76 @@ class timeChartLegend {
     return true;
   }
 
+  unHighlightAllSensorButtons(){
+      d3.selectAll('.sensorButton').selectAll('rect')
+        .transition()
+        .duration(500)
+        .attr('stroke-width', 1)
+        .attr('stroke', 'gray');
+  }
+ highlightSensorButton(sensorID){
+  this.unHighlightAllSensorButtons();
+  let index = 999;
+  console.log(this.sensorItems);
+  let buttonSelection = this.sensorItems
+    .filter((d,i)=>{
+      console.log(sensorID,d.id)
+      if(sensorID == d.id){
+        index = i;
+      }
+      return sensorID == d.id;
+    })
+  buttonSelection.selectAll('rect')
+    .transition()
+    .duration(500)
+    .attr('stroke-width', 3)
+    .attr('stroke', 'black');
+  this.highlightPathStroke(sensorID,index);
+  }
+
+  highlightPathStroke(sensorID,index){
+    window.controller.timeChart.updateGradient(index);
+
+    let sensorSelection = d3.select('#sensorPath' + sensorID)
+    sensorSelection
+      .attr('stroke', 'url(#temperature-gradient'+index.toString()+')')
+      .transition()
+      .duration(500)
+      .attr('stroke-width', 5)
+      .attr('stroke-opacity', 1.0)
+
+    let modelSelection = d3.select('#modelPath' + sensorID)
+    modelSelection
+      .transition()
+      .duration(500)
+      .attr('stroke-width', 5)
+      .attr('stroke', 'black')
+      .attr('stroke-opacity', 1)
+      sensorSelection.moveToFront();
+
+      modelSelection.moveToFront();
+  }
+
+  unHighlightPathStroke(d, i, nodes){
+
+    let sensorID = d.id;
+    d3.select('#sensorPath' + sensorID)
+      .attr('stroke-opacity', 0.6)
+      .transition()
+      .duration(500)
+      .attr('stroke-width', 1)
+      .attr('stroke', 'gray');
+
+    d3.select('#modelPath' + sensorID)
+      .transition()
+      .duration(500)
+      .attr('stroke-width', 1)
+      .attr('stroke', 'gray')
+      .attr('stroke-opacity', .6)
+  }
 
   changeMapSelectedSensor(d) {
-    console.log("INSIDE OF CHANGE SENSOR HIGHLIGHT!!!!!")
+    // unselect previous marker
     d3.selectAll("#selected")
       .attr("id", function(dataPoint) {
         return "marker" + dataPoint.id;
@@ -332,6 +384,8 @@ class timeChartLegend {
     if(d == null){
       return;
     }
+
+    // select new marker and highlight it on map
     d3.selectAll('#marker' + d.id)
       .attr('id', 'selected')
       .selectAll('circle')
@@ -342,5 +396,13 @@ class timeChartLegend {
         .attr('stroke', 'gold');
 
 
+  }
+
+  dispatchSensorEvent(id,eventType){
+    this.sensorItems
+      .filter((d)=>{
+        return id == d.id;
+      })
+      .dispatch(eventType);
   }
 }

@@ -4,16 +4,30 @@ class timeChart {
 	constructor(){
 		console.log("timechart created!")
 
+	let boundingWidth = document.getElementById('map').offsetWidth;
+	this.margin = {top: 5, right: 5, bottom: 110, left: 30}
+	this.margin2 = {top: 270, right: 5, bottom: 30, left: 30}
+
+	this.svg = d3.select("#timeChart").attr('transform','translate('+this.margin.left+','+this.margin.top+')');
+	this.svg.attr('width',1000);
+
+	//this.svg = d3.select('#timeChartLegend')
 
 
-	this.svg = d3.select("#timeChart");
+
+	this.svg.attr('height',500);
+
+		//this.svg.attr('height',350).attr('width',100%);
 
 
-		this.margin = {top: 20, right: 5, bottom: 110, left: 30}
-		this.margin2 = {top: 270, right: 5, bottom: 30, left: 30}
 		this.width = +this.svg.node().getBoundingClientRect().width - this.margin.left - this.margin.right
 		this.height = +this.svg.node().getBoundingClientRect().height - this.margin.top - this.margin.bottom
 		this.height2 = +this.svg.node().getBoundingClientRect().height - this.margin2.top - this.margin2.bottom;
+
+
+		/*this.svg
+			.attr("viewBox", [0, 0, (this.width + this.margin.right + this.margin.left),
+												(this.height + this.margin.top + this.margin.bottom)].join(' '))*/
 
 		this.parseDate = d3.timeParse("%b %Y");
 
@@ -50,6 +64,7 @@ class timeChart {
 
 		this.prevMaxValue = 0;
 		this.maxReadings = [];
+		this.maxModelEstimates = [];
 		this.sensorIndex = 0;
 		this.stopValues =[];
 
@@ -62,9 +77,19 @@ class timeChart {
 	}
 
 
-	initChart(){
+	initNewChart(){
+		this.prevMaxValue = 0;
+		this.maxReadings = [];
+		this.maxModelEstimates = [];
+		this.sensorIndex = 0;
+		this.stopValues =[];
 
+		this.modelDatas = [];
+		this.sensorDatas = [];
+		this.sensorInfos = [];
+		this.refreshChart()
 	}
+
 	refreshChart(){
 		this.svg.selectAll('g').remove();
 
@@ -84,8 +109,8 @@ class timeChart {
 	  console.log(this.xScale(this.selectedDate))
 	  console.log(this.x2Scale(this.selectedDate));
       this.slider
-        //.transition()
-        //.duration(500)
+        .transition()
+        .duration(500)
         .attr('x1', this.xScale(this.selectedDate))
         .attr('y1', 0)
         .attr('x2', this.xScale(this.selectedDate))
@@ -107,7 +132,7 @@ class timeChart {
     }
 
     generateColorScale(){
-    	let maxValue = this.maxReadings[this.maxReadings.length-1].sensor;
+    	let maxValue = this.maxReadings[this.maxReadings.length-1];
     	console.log(window.controller);
 
     	let pm25Fixed = JSON.parse(JSON.stringify(window.controller.pm25Domain))//.reverse();
@@ -117,9 +142,6 @@ class timeChart {
     	let index = pm25Fixed.findIndex(function(number) {
 				return number > maxValue;
 			});
-
-		console.log(index)
-		console.log(pm25Fixed);
 
 		let stopValues = [];
 		for(let i = 0; i < index; i++){
@@ -133,13 +155,11 @@ class timeChart {
 		}
 
 		for(let i = index; i < pm25Fixed.length; i++){
-			console.log(colorScale[i],pm25Fixed[i],this.prevMaxValue)
-			let offset = (this.prevMaxValue*1.0 - window.controller.pm25Domain[i])/this.prevMaxValue;
+			let offset = (maxValue*1.0 - window.controller.pm25Domain[i])/maxValue;
 			if(offset < 0){
 				offset = 0;
 			}
 
-			//offset = 1 - offset;
 			let color = colorScale[i];
 
 			let stopValue = {
@@ -149,15 +169,12 @@ class timeChart {
 
 			console.log(stopValue);
 			stopValues.push(stopValue)
-			//
-
 		}
-		console.log(this.prevMaxValue);
 		stopValues.pop(0);
 		stopValues[stopValues.length-1].offset = 1.0;
 
 		this.stopValues.push(stopValues);
-
+		console.log(this.stopValues);
   }
 
 	updateLegend(){
@@ -169,6 +186,7 @@ class timeChart {
 		if(this.sensorInfos.includes(sensorInfo)){
 			return;
 		}
+
 		if(data == modelData){
 			modelData = jQuery.extend(true, {}, data).data;
 			//modelData.data;
@@ -182,7 +200,6 @@ class timeChart {
 		  return d;
 		}
 
-		console.log(data, modelData);
 		if(!data){
 			data = modelData;
 		} else {
@@ -197,31 +214,78 @@ class timeChart {
 		this.modelDatas.push(modelData);
 		this.sensorDatas.push(data);
 		this.sensorInfos.push(sensorInfo);
+
+
+		console.log(this.sensorInfos);
+
+
+		let timeBounds = [data[0].time, data[data.length-1].time];
+
+	  this.xScale.domain(timeBounds);
+
+	  let maxSensorReading = d3.max(data, function(d) { return d.pm25; });
+	  let maxModelEstimate = d3.max(modelData, function(d) { return d.pm25; });
+		this.maxReadings.push(maxSensorReading)
+		this.maxModelEstimates.push(maxModelEstimate);
+
+	  this.prevMaxValue = d3.max([this.prevMaxValue,maxSensorReading,maxModelEstimate]);
+	  this.generateColorScale();
+		//this.updateGradient(0);
+
+
+
+
+
+
+
+
 		this.update();
 	}
 
 	updateGradient(index){
 		console.log(this.stopValues,index);
-		this.svg.append("linearGradient")
-		      .attr("id", "temperature-gradient")
-		      .attr("gradientUnits", "objectBoundingBox")
-		      .attr("x1", 0).attr("y1", 0)
-		      .attr("x2", 0).attr("y2", 1)
-		    .selectAll("stop")
-		      .data(this.stopValues[index])
-		    .enter().append("stop")
-		      .attr("offset", function(d) { return d.offset; })
-		      .attr("stop-color", function(d) { return d.color; });
+
+		if(this.svg.selectAll("#temperature-gradient"+index.toString()).empty()){
+			this.svg.append("linearGradient")
+			      .attr("id", "temperature-gradient"+index.toString())
+			      .attr("gradientUnits", "objectBoundingBox")
+			      .attr("x1", 0).attr("y1", 0)
+			      .attr("x2", 0).attr("y2", 1)
+			    .selectAll("stop")
+			      .data(this.stopValues[index])
+			    .enter().append("stop")
+			      .attr("offset", function(d) { return d.offset; })
+			      .attr("stop-color", function(d) { return d.color; });
+		}
+	}
+
+	removeGradient(index){
+		this.svg.selectAll("linearGradient")
+			.remove();
+		console.log(this.stopValues);
+		for(let i = 0; i < this.stopValues.length; i++){
+			this.updateGradient(i);
+		}
 	}
 
 	update(){
+		this.yScale.domain([0, this.prevMaxValue]);
+		this.x2Scale.domain(this.xScale.domain());
+		this.y2Scale.domain(this.yScale.domain());
+
+		console.log(this.maxReadings,this.maxModelEstimates,this.stopValues);
 		let self = this;
-		let data = this.sensorDatas[this.sensorDatas.length-1];
-		let modelData = this.modelDatas[this.modelDatas.length-1];
+
 		this.refreshChart();
 
 		this.updateLegend();
-		console.log(this.sensorInfos);
+
+		this.slider = this.focus.append("line");
+		console.log(this.slider);
+
+		console.log(selector.selectedDate);
+		this.updateSlider(selector.selectedDate);
+
 
 		function brushed() {
 			console.log(d3.event.sourceEvent)
@@ -265,34 +329,7 @@ class timeChart {
 	    .attr("stop-color", function(d) { return d.color; });
 	    */
     // Start of update
-    let timeBounds = [data[0].time, data[data.length-1].time];
 
-      console.log(timeBounds);
-	  this.xScale.domain(timeBounds);
-		/* TODO: FIX To make modulas*/
-
-	  let maxSensorReading = d3.max(data, function(d) { return d.pm25; });
-	  let maxModelEstimate = d3.max(modelData, function(d) { return d.pm25; });
-	  console.log(maxModelEstimate);
-		this.maxReadings.push({
-			sensor:maxSensorReading,
-			model:maxModelEstimate
-		})
-
-	  this.prevMaxValue = d3.max([this.prevMaxValue,maxSensorReading,maxModelEstimate]);
-	  this.generateColorScale();
-		this.updateGradient(0);
-
-
-	  this.yScale.domain([0, this.prevMaxValue]);
-	  this.x2Scale.domain(this.xScale.domain());
-	  this.y2Scale.domain(this.yScale.domain());
-
-	  this.slider = this.focus.append("line");
-		console.log(this.slider);
-
-		console.log(selector.selectedDate);
-		this.updateSlider(selector.selectedDate);
 
 
 
@@ -357,12 +394,14 @@ class timeChart {
 	      .attr("class", "axis axis--y")
 	      .call(this.yAxis);
 
-	  let newLine = this.context.append("path")
-	      .datum(data)
-	      .attr("class", "sensorLine")
-	      .attr("d", this.area2);
+				/* Append onto the context menu */
+		if(this.sensorDatas.length != 0){
+			let newLine = this.context.append("path")
+					.datum(this.sensorDatas[this.sensorDatas.length-1])
+					.attr("class", "sensorLine")
+					.attr("d", this.area2);
+		}
 
-		console.log(newLine)
 
 	  this.context.append("g")
 	      .attr("class", "axis axis--x")
@@ -380,26 +419,42 @@ class timeChart {
 	      .attr("height", this.height)
 	      .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")")
 	      .call(this.zoom);
+
 	  let that = this;
 	  overLay.on("click", function() {
-	  		// One possibility is to make this s shift click:
-	  	  //if (d3.event.shiftKey) {
-		   //     alert("Mouse+Shift pressed");
-		    //}
-
           let coords = d3.mouse(this);
-          // Normally we go from data to pixels, but here we're doing pixels to data
           let newData= {
             x: Math.round( that.xScale.invert(coords[0])),  // Takes the pixel number to convert to number
             y: Math.round( that.yScale.invert(coords[1]))
           }
           that.selectedDate = new Date(newData.x);
+					window.controller.selectedDate = that.selectedDate
           selector.selectedDate = that.selectedDate;
-          console.log(selector.selectedDate);
           selector.grabAllSensorData(selector.selectedDate);
           selector.grabAllModelData(selector.selectedDate)
           that.updateSlider(that.selectedDate)
       })
+	}
+
+	removePoint(index){
+		this.sensorDatas.splice(index, 1);
+		this.modelDatas.splice(index, 1);
+		this.sensorInfos.splice(index, 1);
+		console.log(this.maxReadings,this.maxModelEstimates,this.stopValues);
+		this.maxReadings.splice(index, 1);
+		this.maxModelEstimates.splice(index, 1);
+		this.stopValues.splice(index,1);
+		console.log(this.maxReadings,this.maxModelEstimates,this.stopValues);
+		this.prevMaxValue = d3.max([d3.max(this.maxReadings),d3.max(this.maxModelEstimates)]);
+		console.log(this.prevMaxValue);
+
+		if(this.sensorDatas==[]){
+
+			return;
+		}
+
+		this.removeGradient(index);
+		this.update();
 	}
 
 }

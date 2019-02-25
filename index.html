@@ -13,6 +13,8 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.13.0/d3-legend.js"></script>
 	<script src="https://d3js.org/d3-hsv.v0.1.min.js"></script>
 	<script src="https://d3js.org/d3-contour.v1.min.js"></script>
+	<script src="https://d3js.org/d3-hierarchy.v1.min.js"></script>
+
 
 	<!-- Latest Bootstrap CSS, JS -->
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
@@ -29,18 +31,20 @@
 	<script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" crossorigin="anonymous"></script>
 
 	<!---Google Maps --->
-	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCPkb5f5z6o5utgVRe3EQpA-PbDScQgVsU&callback=initMap"></script>
-	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCPkb5f5z6o5utgVRe3EQpA-PbDScQgVsU&libraries=drawing"></script>
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA3X5TPjGMtpRK1NnVeuDOCAwvZSKPT564&callback=initMap"></script>
+	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA3X5TPjGMtpRK1NnVeuDOCAwvZSKPT564&libraries=drawing"></script>
 
 	<title>
-
+		AQ Explorer
 	</title>
 </head>
 
 <body>
+	<input type="text" name="datetimes" value="01/01/2018 - 01/15/2018" />
+
 	<div class="wrapper">
 
-		<!-- Sidebar  -->
+		<!-- Sidebar
 		<nav id="sidebar">
 			<div id="dismiss">
 				<i class="fas fa-arrow-left"></i>
@@ -52,20 +56,20 @@
 			</div>
 
 			<ul class="list-unstyled CTAs">
-
 				<li class="active">
 					<input type="text" name="datetimes" value="01/01/2018 - 01/15/2018" />
 				</li>
 			</ul>
 
-		</nav>
+		</nav> -->
 
 		<!-- Page Content  -->
 		<div id="content">
+			<!--
 			<nav class="navbar navbar-expand-lg navbar-light bg-light">
 				<div class="container-fluid">
 
-					<!-- Date Selection Button -->
+					<!- Date Selection Button ->
 					<button type="button" id="sidebarCollapse" class="btn btn-info">
 						<i class="fas fa-align-left"></i>
 						<span>Select Dates/Events</span>
@@ -74,27 +78,27 @@
 						<i class="fas fa-align-justify"></i>
 					</button>
 
-					<!-- Date Display
+					<!- Date Display
 					<div class="collapse navbar-collapse" id="navbarSupportedContent">
 						<ul class="nav navbar-nav ml-auto">
 
 						</ul>
 					</div>
--->
+->
 
 					<text class="navbar-text">
 						<span class="navbar-text" id="startDate"></span>
 						<span class="navbar-text" id="dateDisplay"> Select a date range on the side bar. </span>
 						<span class="navbar-text" id="stopDate"></span>
 					</text>
-					<!--
+					<!-
 					<span class="navbar-brand" href="#">
 						<div class="container-fluid-nav text-center">
 
 						</div>
 					</span>
-				-->
-					<!--
+				->
+					<!-
 					<ul class="nav-item">
 						<li class="nav-item active">
 
@@ -102,33 +106,19 @@
 						<li class="nav-item">
 							<span id="stopDate"></span>
 						</li>
-		      </ul> -->
+		      </ul> ->
 
-					<!-- Mode Selection Toggle -->
-					<form class="navbar-form navbar-left navbar-input-group">
-
-
-					<div class="input-group">
-						<text id="currentMode" class="navbar-text pr-2"></text>
-						<div class="form-group checkbox navbar-btn">
-
-							<label class="switch nav-link" class="float-xl-left">
-								<input type="checkbox" id="modeSwitch" checked>
-								<span class="slider mx-auto"></span>
-							</label>
-					  </div>
-					</div>
-					</form>
-					<!--
+					<!-
 					<div class="collapse navbar-collapse" id="navbarSupportedContent">
 						<ul id="buttonUL">
 
 						</ul>
 					</div>
-				-->
+				->
 
 				</div>
 			</nav>
+		-->
 		</div>
 
 		<div class="overlay"></div>
@@ -144,29 +134,56 @@
 		<script src="javascript/sidebar.js"> </script>
 
 
-		<div class="container custom-container">
+		<!--  <div class="container custom-container">-->
 			<div class="row">
-				<div class="col-10">
-					<div width='500' height='500' id="map"> </div>
-					<div id="mapLegend"> </div>
+				<!-- <div class="col-12"> -->
+					<div  height='650' width = '600' id="map"> </div>
+
+				<div id="radioButton"></div>
+				<div id="mapLegend">
+					<img
+						src="/Designs/ColorLegend.svg"
+						alt="PM 2.5 Color Scale."
+						height="280px"
+						width="94px" />
 				</div>
+				<!--
 				<div class="col-2">
-					<svg id="pm25Legend"> </svg>
+					<div id="radioButton"></div>
+					<div id="mapLegend">
+						<img
+					    src="/Designs/ColorLegend.svg"
+					    alt="PM 2.5 Color Scale."
+					    height="250px"
+					    width="84px" />
+					</div>
+
+
 					<form onsubmit="return makeSearch()">
 						<input type="text" placeholder="Search for Sensor.." name="search">
 						<button type="submit"><i class="fa fa-search"></i></button>
 					</form>
 				</div>
+				-->
+				<div class="spike-selector" height='500' width = '133'>
+						<!--<span>Select an AQ Event: </span></div>-->
+						<form onsubmit="return makeSearch()">
+							<input type="text" placeholder="Search for Sensor.." name="search">
+							<button type="submit"><i class="fa fa-search"></i></button>
+						</form>
+				</div>
+				<!--</div> -->
 			</div>
+		</div>
 
-			<div class="row">
+			<!--<div class="row">class="col-2 spike-selector"
 				<div id="lineMap">
 					<svg> </svg>
 				</div>
-			</div>
+			</div> END MODE REMOVAL-->
 
 			<div class="row">
-				<div class="col-10" id="timeChartGroup">
+				<div height='500' width = '1000' id="timeChartGroup">
 					<svg id="timeChartLegend"> </svg>
 					<svg id="timeChart"> </svg>
 				</div>
@@ -176,18 +193,22 @@
 
 
 </body>
+<script src="javascript/component/treelist.js"></script>
+<script src="javascript/spikeDetection.js"></script>
+
 <script src="javascript/component/d3CloseButton.js"></script>
 
 <script src="javascript/interpolatedChart.js"> </script>
-<script src="javascript/simpleShapeDrawing.js"> </script>
+<!---<script src="javascript/simpleShapeDrawing.js"> </script>
+<script src="javascript/modeSelection.js"> </script>
+
+END MODE REMOVAL -->
 
 <script src="javascript/map.js"> </script>
 <script src="javascript/timechartLegend.js"> </script>
 <script src="javascript/timechart.js"> </script>
 <script src="javascript/selector.js"> </script>
 <script src="javascript/controller.js"> </script>
-<script src="javascript/modeSelection.js"> </script>
-
 <script src="javascript/main.js"> </script>
 
 </html>

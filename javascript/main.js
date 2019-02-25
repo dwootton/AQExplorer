@@ -8,9 +8,8 @@ window.controller.map = aqMap;
 let selector = new Selector();
 window.controller.selector = selector;
 window.controller.map = aqMap;
-let mode = new ModeSelector();
-console.log(mode)
-window.controller.modeSelector = mode;
+//let mode = new ModeSelector(); END MODE REMOVAL
+//window.controller.modeSelector = mode;
 function makeSearch() {
 
 	let sensorName = document.getElementsByName("search")[0].value;
@@ -18,6 +17,7 @@ function makeSearch() {
 	let sensor = window.controller.allSensorsData.find(function(element){
 		return element.id === sensorName;
 	})
+	
 
 
   	window.controller.selector.grabIndividualSensorData(sensor)

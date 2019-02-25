@@ -10,49 +10,79 @@ class Selector {
    *
    */
   constructor() {
-    this.startDate = new Date();
-    this.endDate = new Date();
-    this.selectedDate = new Date();
+    this.startDate = moment().startOf('hour').subtract(26, 'hour');
+    this.endDate = moment().startOf('hour').subtract(2, 'hour');
+    window.controller.selectedDate = new Date();
     this.dataMap = window.controller.map;
     this.timeChart = window.controller.timeChart;
     this.sensorSource = "airU";//"airU"
     this.rendered = false;
+    this.selectedSensors = [];
 
     this.populateSensorList();
 
     $(()=> {
+
+      /* Callback for when dates are selected on the picker */
+      let callback = (start, end) => {
+        // remove previously selected sensor from map
+        if(!d3.selectAll('#selected').empty()){
+          window.controller.timeChartLegend.changeMapSelectedSensor();
+          window.controller.selectedSensor = null;
+        }
+
+        // Update timechart label
+        /*$('#reportrange span').html(start.format('D MMMM YYYY') + ' - ' + end.format('D MMMM YYYY'));*/
+
+        this.startDate = new Date(start.format());
+        this.endDate = new Date(end.format());
+
+        window.controller.startDate = new Date(start.format());
+        window.controller.endDate = new Date(end.format());
+
+        // select the middle timepoint as default render
+        window.controller.selectedDate = new Date((this.startDate.getTime() + this.endDate.getTime()) / 2);
+
+        /* Update the date display in the navBar
+        document.getElementById("dateDisplay").textContent = "to";
+        document.getElementById("startDate").textContent = formatDate(this.startDate)
+        document.getElementById("stopDate").textContent =  formatDate(this.endDate);*/
+        this.newTime = true;
+
+        this.grabAllSensorData(window.controller.selectedDate);
+        this.modelData = this.grabAllModelData(window.controller.selectedDate, 10, 10);
+        this.rendered = true;
+        console.log(d3.selectAll('.close'));
+        while(!d3.select('.close').empty()){
+          d3.select('.close').dispatch('click');
+        }
+        //let prevSelectedSensor = [];
+        if(this.selectedSensors){
+          this.selectedSensors = [];
+          window.controller.timeChart.initNewChart();
+          /*this.selectedSensors.forEach(sensorID=>{
+            //prevSelectedSensor.append(sensorID)
+            console.log("Prev Clicked Element", sensorID);
+
+            // remove the sensor from selectedSensors
+            this.selectedSensors =  this.selectedSensors.filter(e => e !== sensorID);
+
+          });*/
+        }
+
+
+      };
+
       /* Set up the time selector UI */
       $('input[name="datetimes"]').daterangepicker({
           timePicker: true,
-          startDate: moment().startOf('hour').subtract(36, 'hour'),
-          endDate: moment().startOf('hour'),
+          startDate: this.startDate,
+          endDate: this.endDate,
           locale: {
             format: 'M/DD hh:mm A'
           }
-        },
-        /* Callback for when dates are selected on the picker */
-        (start, end) => {
-          // Update timechart label
-          $('#reportrange span').html(start.format('D MMMM YYYY') + ' - ' + end.format('D MMMM YYYY'));
-
-          this.startDate = new Date(start.format());
-          this.endDate = new Date(end.format());
-
-          window.controller.startDate = new Date(start.format());
-          window.controller.endDate = new Date(end.format());
-
-          // select the middle timepoint as default render
-          this.selectedDate = new Date((this.startDate.getTime() + this.endDate.getTime()) / 2);
-
-          /* Update the date display in the navBar */
-					document.getElementById("dateDisplay").textContent = "to";
-          document.getElementById("startDate").textContent = formatDate(this.startDate)
-          document.getElementById("stopDate").textContent =  formatDate(this.endDate);
-
-          this.grabAllSensorData(this.selectedDate);
-          this.modelData = this.grabAllModelData(this.selectedDate, 10, 10);
-          this.rendered = true;
-        });
+        },callback);
+      callback(this.startDate,this.endDate);
     });
   }
 
@@ -62,10 +92,14 @@ class Selector {
    *
    */
   async populateSensorList() {
+
     let url = "http://air.eng.utah.edu/dbapi/api/liveSensors/"+this.sensorSource;
+    if(this.sensorSource == "airu"){
+      url = "http://air.eng.utah.edu/dbapi/api/liveSensors/airU";
+    }
     //let url = "http://air.eng.utah.edu/dbapi/api/sensorsAtTime/airU&2019-01-04T22:00:00Z"
     let req = fetch(url)
-
+    console.log("INSIDE OF POPULATE!!!",this.sensorList)
     /* Adds each sensor to this.sensorList */
     req.then((response) => {
         return response.text();
@@ -83,6 +117,7 @@ class Selector {
         }
 
         this.sensorList = sensors;
+        console.log("INSIDE OF POPULATE!!!",this.sensorList)
       });
   }
 
@@ -92,10 +127,10 @@ class Selector {
    * @return {[type]} string of the sensor source used for the API.
    */
   changeSource(){
-    if(this.sensorSource == "airU"){
+    if(this.sensorSource == "airU" || this.sensorSource == "airu"){
       return "airu";
-    } else if(this.sensorSource == "all") {
-      if(this.selectedSensor[0]=="S"){ //if AirU sensor was selected
+    } else if(this.sensorSource == "all" ) {
+      if(window.controller.selectedSensor.id[0]=="S"){ //if AirU sensor was selected
         return "airu"
       } else {
         return "Purple Air";
@@ -115,11 +150,21 @@ class Selector {
     if (!selectedSensor.id) {
       return;
     }
+
     let start = this.startDate.toISOString().slice(0, -5) + "Z";
     let stop = this.endDate.toISOString().slice(0, -5) + "Z";
 
     let id = selectedSensor.id;
-    this.selectedSensor = selectedSensor;
+
+    window.controller.selectedSensor = selectedSensor;
+    if(this.selectedSensors.includes(id)){
+      console.log(id);
+      window.controller.timeChartLegend.highlightSensorButton(id);
+      //window.controller.timeChartLegend.dispatchEvent(id,'click');
+      return;
+    }
+    this.selectedSensors.push(id);
+
     let processed = true;
     var numDaysBetween = function(d1, d2) {
       var diff = Math.abs(d1.getTime() - d2.getTime());
@@ -130,16 +175,18 @@ class Selector {
     this.generateModelData = true;
 
     if(timeInterval > 2){ // if time difference is
+      console.log(timeInterval);
       let changedSource = this.changeSource();
       url = "https://air.eng.utah.edu/dbapi/api/processedDataFrom?id=" + id + "&sensorSource=" + changedSource + "&start=" +start + "&end=" +stop + "&function=mean&functionArg=pm25&timeInterval=5m"
-      //https://air.eng.utah.edu/dbapi/api/processedDataFrom?id=S-A-085&sensorSource=airu&start=2019-01-20T01:08:40Z&end=2019-01-27T01:08:40Z&function=mean&functionArg=pm25&timeInterval=5m
-      console.log(url)
+
       if(timeInterval > 7){
         this.generateModelData = false;
       }
     } else {
+      this.generateModelData = true;
       url = "https://www.air.eng.utah.edu/dbapi/api/rawDataFrom?id=" + id + "&sensorSource="+this.sensorSource.toLowerCase()+"&start=" + start + "&end=" + stop + "&show=pm25";
     }
+
     // Note: sensor source must be lowercase for the API.
 
     // WORKS: https://air.eng.utah.edu/dbapi/api/processedDataFrom?id=S-A-085&sensorSource=airu&start=2019-01-20T01:08:40Z&end=2019-01-27T01:08:40Z&function=mean&functionArg=pm25&timeInterval=5m
@@ -151,7 +198,7 @@ class Selector {
     console.log(url);
     let req = fetch(url)
 
-    /* Processes sensor data and het model data */
+    /* Processes sensor data and the model data */
     req.then((response) => {
       //console.log(response.text())
         return response.text();
@@ -159,7 +206,7 @@ class Selector {
       .then((myJSON) => {
         myJSON = JSON.parse(myJSON);
         this.individualSensorData = myJSON;
-        console.log("INDIV",this.individualSensorData)
+
         if(this.generateModelData){
           let modelData = this.grabModelData(selectedSensor);
         } else {
@@ -198,9 +245,8 @@ class Selector {
   async grabAllSensorData(time) {
     /* Remove sensors from the map */
     if(window.controller.sensorOverlay){
-      d3.select(window.controller.sensorOverlay.getPanes().overlayMouseTarget).selectAll("div").remove();
+      window.controller.map.blackenSensors();
     }
-
 
     /* Sets up a window of time to get pm25 values from */
     let closestStartDate = new Date(time);
@@ -209,12 +255,19 @@ class Selector {
     /* Obtain the most recent values for each sensor */
 		let formattedTime = time.toISOString().slice(0,-5)+'Z'
 		let url = "http://air.eng.utah.edu/dbapi/api/sensorsAtTime?sensorSource="+this.sensorSource+"&selectedTime=" + formattedTime;
-
+    if(this.sensorSource == 'airu'){
+      url = "http://air.eng.utah.edu/dbapi/api/sensorsAtTime?sensorSource=airU&selectedTime=" + formattedTime;
+    }
+    console.log("INSIDE REQUEST", time)
 		let req = fetch(url)
 			.then(function(response){
+        console.log(response);
 				return response.text();
 			})
       .then(values => {
+      if(window.controller.selectedDate != time){
+        return;
+      }
 			let parsedValues = JSON.parse(values);
 
       /* processes the retrieved data into a format for plotting on map */
@@ -227,10 +280,22 @@ class Selector {
 					source: element['Sensor Source']
 				}
 			})
+      console.log("INSIDE OF ACTUAL REQUES",valuesFixedAttr);
 
       /* Update data and re-render map view */
 			this.allSensorsData = valuesFixedAttr;
 			this.updateSensorView();
+
+      if(this.newTime){
+        this.newTime = false;
+        if(window.controller.spikeDetector){
+          console.log(window.controller.spikeDetector);
+          window.controller.spikeDetector.removeSVG();
+          window.controller.spikeDetector = null;
+        }
+        window.controller.spikeDetector = new SpikeDetector(valuesFixedAttr);
+
+      }
 		});
   }
 
@@ -252,6 +317,11 @@ class Selector {
     let modelReq = fetch(url).then( (response)=> {
       return response.text();
     }).then( (values) => {
+      /* If there is a more recent selection */
+
+      if(window.controller.selectedDate != time){
+        return;
+      }
       let allModelData = JSON.parse(values)[1];
       for (time in allModelData) {
         this.allModelData = allModelData[time].pm25;
@@ -277,10 +347,12 @@ class Selector {
   }
 
   setSensorSource(source){
+    console.log(source);
     this.sensorSource = source;
-    this.populateSensorList();
+    //this.populateSensorList();
+    console.log(this.rendered)
     if(this.rendered){
-      this.grabAllSensorData(this.selectedDate);
+      this.grabAllSensorData(window.controller.selectedDate);
     }
   }
 }

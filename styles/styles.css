@@ -93,12 +93,12 @@ input:checked+.slider:before {
 @import "https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700";
 
 body {
-  font-family: 'Poppins', sans-serif;
-  background: #fafafa;
+  font-family: sans-serif;
+  background: #F5F5F5;
 }
 
 p {
-  font-family: 'Poppins', sans-serif;
+  font-family:  sans-serif;
   font-size: 1.1em;
   font-weight: 300;
   line-height: 1.7em;
@@ -131,6 +131,38 @@ a:focus {
 /* ---------------------------------------------------
     SIDEBAR STYLE
 ----------------------------------------------------- */
+
+input[name="datetimes"] {
+  width: 25vw;
+  top: 0;
+  left: 20px;
+  height: 5vh;
+  background: #006837;
+  outline: none;
+  border: none;
+  position: fixed;
+  /*padding-left: 2vw;
+  padding-right: 2vw;*/
+  color: white;
+  font-weight:bold;
+  text-align: center;
+  margin-bottom: 2vh;
+  z-index: 1000;
+  border-bottom-left-radius: 25px;
+  border-bottom-right-radius: 25px;
+
+
+  /* Drop Shadow */
+  -webkit-box-shadow: 0px 1px 2px 3px #444;  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
+  -moz-box-shadow:    0px 1px 2px 3px #444;  /* Firefox 3.5 - 3.6 */
+  box-shadow:         0px 1px 2px 3px #444;  /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
+
+ }
+
+ .gm-style-mtc {
+  display: none;
+}
+/*
 #sidebar {
   width: 250px;
   position: fixed;
@@ -257,6 +289,7 @@ a.article:hover {
   background: #6d7fcc !important;
   color: #fff !important;
 }
+*/
 
 /* ---------------------------------------------------
     interpolatedChart Styles
@@ -270,21 +303,33 @@ a.article:hover {
   background: whitesmoke
 }
 
+.wrapper{
+  margin-top: 1vh;
+  margin-bottom: 1vh;
+  margin-left:  4vh;
+  margin-right: 4vh;
+}
 /* ---------------------------------------------------
     map Styles
 ----------------------------------------------------- */
 #map {
-  /*margin-top:10px; */
-  height: 500px;
-  width: 100%;
+  margin:none;
+  height: 650px;
+  width: 1200px;
   display: inline-block;
+}
+.gm-style-cc { display:none; }
+#radioButton{
+  font: sans-serif
+  padding:10px;
+  background: rgba(240, 240, 240, 0.8);
 }
 
 #mapLegend {
-  font-family: Arial, sans-serif;
+  font-family:  sans-serif;
   background: #fff;
-  padding: 10px;
-  margin: 10px;
+  /*padding: 10px;
+  margin: 10px;*/
 }
 
 /* Sensor */
@@ -379,18 +424,78 @@ a.article:hover {
   margin-left: -20px;
   font-size: .9em;
 }
+/* ---------------------------------------------------
+    Spike Selector Styles
+----------------------------------------------------- */
+.spike-selector
+{
+    height: 650px;
+    width: 150px;
+    overflow: scroll;
+    border: 1px solid lightgray;
+    display:inline-block;
+}
 
+.spikes {
+      height: 30px;
+      width: 140px;
+      margin: 10 auto;
+      padding-right: 10px;
+  }
+
+
+.spikes rect {
+  cursor: pointer;
+  fill: #fff;
+  fill-opacity: 0.5;
+  stroke: #aaa;
+  stroke-width: 1.5px;
+}
+
+.spikes .primarytext {
+  font: 14px sans-serif;
+  pointer-events: none;
+}
+
+.spikes .secondarytext  {
+  font: 10px sans-serif;
+  color: darkgrey;
+}
 /* ---------------------------------------------------
     timeChart Styles
 ----------------------------------------------------- */
+#timeChartGroup{
+  vertical-align: top;
+  position: relative;
+
+}
+
+.svg-container {
+    position: relative;
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%; /* aspect ratio*/
+    vertical-align: top;
+    overflow: hidden;
+}
+
+.svg-content-responsive {
+    display: inline-block;
+    position: absolute;
+    top: 10px;
+    left: 0;
+}
+
+
+
 #timeChart {
   height: 350px;
-  width: 100%;
+  width: 1700px;
 }
 
 #timeChartLegend {
-  height: 80px;
-  width: 100%;
+  /*height: 35px;*/
+  width: 1700px;
 }
 
 .zoom {
