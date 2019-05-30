@@ -6,7 +6,7 @@ class timeChart {
 
 	let boundingWidth = document.getElementById('map').offsetWidth;
 	this.margin = {top: 5, right: 5, bottom: 95, left: 30}
-	this.margin2 = {top: 200, right: 5, bottom: 30, left: 30}
+	this.margin2 = {top: 190, right: 5, bottom: 30, left: 30}
 
 	this.svg = d3.select("#timeChart").attr('transform','translate('+this.margin.left+','+this.margin.top+')');
 	this.svg.attr('width',1000);
@@ -15,7 +15,7 @@ class timeChart {
 
 
 
-	this.svg.attr('height',500);
+	this.svg.attr('height',490);
 
 		//this.svg.attr('height',350).attr('width',100%);
 

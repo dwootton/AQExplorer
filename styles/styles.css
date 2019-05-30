@@ -1,4 +1,9 @@
 
+#sliderMetric div {
+  float: left;
+  width: 100px;
+}
+
 /* Spinner
     obtained from http://jsbin.com/roqakuxebo/1/edit?html,css,output
 */
@@ -502,8 +507,8 @@ a.article:hover {
 }
 
 #value-new-york-times{
-  text-align: center;
-  margin-left: 550px;
+  text-align: left;
+  margin-left: 10px;
   margin-right: auto;
 }
 
@@ -607,7 +612,7 @@ a.article:hover {
 
 
 #timeChart {
-  height: 265px;
+  height: 255px;
   width: 1355px;
 }
 

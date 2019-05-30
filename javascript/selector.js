@@ -50,6 +50,8 @@ class Selector {
           function hideElements(){
             d3.selectAll('#slider').attr('display','none');
             d3.selectAll('#sliderMetric').attr('display','none');
+            d3.selectAll('#sliderMetricLabel').attr('display','none');
+
             d3.selectAll('#value-new-york-times').style('display','none');
             d3.selectAll('.spike-selector').style('display','none');
             that.oldSlider = window.controller.slider;
@@ -67,6 +69,7 @@ class Selector {
           function showElements(){
             d3.selectAll('#slider').attr('display','block');
             d3.selectAll('#sliderMetric').attr('display','block');
+            d3.selectAll('#sliderMetricLabel').attr('display','block');
             d3.selectAll('#value-new-york-times').style('display','block');
             d3.selectAll('.spike-selector').style('display','block');
             if(that.oldSlider){
