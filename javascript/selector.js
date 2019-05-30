@@ -18,7 +18,7 @@ class Selector {
     this.sensorSource = "airU";//"airU"
     this.rendered = false;
     this.selectedSensors = [];
-    this.maxPM25 = [];
+    this.averagedPM25 = [];
     this.populateSensorList();
 
     $(()=> {
@@ -522,7 +522,8 @@ grabIndividualSensorData(selectedSensor){
       /*if(window.controller.selectedDate != time){
         return;
       } */
-      this.maxPM25 = [];
+      this.averagedPM25 = [];
+      this.maxPM25 = []
       console.log(values);
       let organizedModelDataCollection = [];
       let parsedModelData = JSON.parse(values);
@@ -539,11 +540,16 @@ grabIndividualSensorData(selectedSensor){
           time: new Date(date),
           data: element[date].pm25
         })
+        this.averagedPM25.push(element[date].pm25.reduce((p,c,_,a) => p + c/a.length,0))
         this.maxPM25.push(d3.max(element[date].pm25));
-
       })
-      console.log(this.maxPM25)
-      window.controller.slider.changeData(this.maxPM25);
+      if(window.controller.slider.currentMetric == "Maximum"){
+        this.scentedMetric = this.maxPM25;
+      } else {
+        this.scentedMetric = this.averagedPM25;
+      }
+
+      window.controller.slider.changeData(this.scentedMetric);
       console.log(organizedModelDataCollection);
 
       this.entireModelData = organizedModelDataCollection;

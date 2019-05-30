@@ -7,7 +7,7 @@ class Slider {
     height = 100;
 
   let timeBounds = [new Date(window.controller.selector.startDate), new Date(window.controller.selector.endDate )];
-
+  this.setUpMetricSelection();
   let interval = 15;
   this.times = generateNewTimes(timeBounds[0],timeBounds[1],interval);
   let times = this.times;
@@ -167,25 +167,54 @@ class Slider {
     //window.controller.selector.grabAllSensorData(that.selectedDate);
     //window.controller.selector.grabAllModelData(that.selectedDate);
     window.controller.map.getDataAtTime(window.controller.selectedDate);
+  }
+}
+  setUpMetricSelection(){
+    //let mapLegend = document.getElementById('mapLegend');
+    //this.myMap.controls[google.maps.ControlPosition.TOP_RIGHT].push(mapLegend);
+    let metricMenu = document.getElementById('sliderMetric');
+    let div = document.createElement('div');
 
-    /*Attach a  global listener for keys
-    $(document).keydown(function(e) {
-      switch(e.which) {
+    let metricTypes = ['Average','Maximum']
+    for(let i=0; i < metricTypes.length ; i++)
+    {
+        let innerDiv = document.createElement('div')
+        innerDiv.id = metricTypes[i];
+        let button = document.createElement('input')
+        button.type = "radio"
+        button.name = "slider metric"
+        button.value = metricTypes[i];
 
-          case 37: // left
-          draw(that.selectedDate.getTime()-5*60*1000);
-          break;
+        if(i == 0){
+          button.checked = true;
+        }
+        //item.innerHTML= '<input type="checkbox" name="item[]" value="'+label+'>';
 
-          case 39: // right
-          draw(that.selectedDate.getTime()+5*60*1000);
-          break;
+        //let item = label + newBox;
+        let label = document.createElement('label');
+        label.innerHTML = metricTypes[i];
+        label.htmlFor = metricTypes[i];
+        innerDiv.appendChild(button);
+        innerDiv.appendChild(label);
+        metricMenu.appendChild(innerDiv);
+        innerDiv.onclick = (e)=>{
 
-          default: return; // exit this handler for other keys
-      }
-    e.preventDefault(); // prevent the default action (scroll / move caret)
-    });*/
+          let metric = e.toElement.value;
+          if(metric == this.currentMetric){
+            return;
+          }
+          this.currentMetric = metric;
+          if(metric == "Average"){
+            this.changeData(window.controller.selector.averagedPM25);
+          } else {
+            this.changeData(window.controller.selector.maxPM25);
+          }
 
+        }
+    }
+    metricMenu.appendChild(div);
 
+    //this.myMap.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(sensorSourceMenu);
   }
 
     /*
@@ -262,7 +291,7 @@ class Slider {
       svg.style("background-color", d3.hsl(h, 0.8, 0.8));
 
     }*/
-  }
+
   moveSlider(offset){
     if(window.controller.selectedDate.getTime()+offset > window.controller.selector.endDate.getTime() || window.controller.selectedDate.getTime()+offset < window.controller.selector.startDate.getTime()){
       return; // as it would be outside of the slider
