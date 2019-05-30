@@ -487,59 +487,10 @@ class Slider {
       .transition(500)
       .attr('y', d => yscale(d.value))
       .attr('height', d => yscale(0) - yscale(d.value));
-
-
   }
 
 }
 
-
-/*
-
-<style>
-
-.ticks {
-  font: 10px sans-serif;
-}
-
-.track,
-.track-inset,
-.track-overlay {
-  stroke-linecap: round;
-}
-
-.track {
-  stroke: #000;
-  stroke-opacity: 0.3;
-  stroke-width: 10px;
-}
-
-.track-inset {
-  stroke: #ddd;
-  stroke-width: 8px;
-}
-
-.track-overlay {
-  pointer-events: stroke;
-  stroke-width: 50px;
-  stroke: transparent;
-  cursor: crosshair;
-}
-
-.handle {
-  fill: #fff;
-  stroke: #000;
-  stroke-opacity: 0.5;
-  stroke-width: 1.25px;
-}
-
-</style>
-<svg width="960" height="500"></svg>
-<script src="//d3js.org/d3.v4.min.js"></script>
-<script>
-
-
- */
 /* Date = datetime obejct. Interval = number of minutes (number)*/
  function roundToInterval(date, interval) {
    p = interval * 60 * 1000; // milliseconds in an hour

@@ -18,7 +18,7 @@ class Selector {
     this.sensorSource = "airU";//"airU"
     this.rendered = false;
     this.selectedSensors = [];
-    this.averagedPM25 = [];
+    this.maxPM25 = [];
     this.populateSensorList();
 
     $(()=> {
@@ -522,7 +522,7 @@ grabIndividualSensorData(selectedSensor){
       /*if(window.controller.selectedDate != time){
         return;
       } */
-      this.averagedPM25 = [];
+      this.maxPM25 = [];
       console.log(values);
       let organizedModelDataCollection = [];
       let parsedModelData = JSON.parse(values);
@@ -539,11 +539,11 @@ grabIndividualSensorData(selectedSensor){
           time: new Date(date),
           data: element[date].pm25
         })
-        this.averagedPM25.push(element[date].pm25.reduce((p,c,_,a) => p + c/a.length,0))
+        this.maxPM25.push(d3.max(element[date].pm25));
 
       })
-      console.log(this.averagedPM25)
-      window.controller.slider.changeData(this.averagedPM25);
+      console.log(this.maxPM25)
+      window.controller.slider.changeData(this.maxPM25);
       console.log(organizedModelDataCollection);
 
       this.entireModelData = organizedModelDataCollection;
@@ -836,4 +836,20 @@ function closestTime (arr, x) {
         clst = ub ;
     }
     return clst ; // If you want the value instead of the index, return arr[clst]
+}
+
+function generateNewTimes(startDate, endDate, interval){
+  var dates = [],
+     currentDate = startDate,
+     addTime = function(newInterval) {
+       var date = new Date(this.valueOf());
+       date.setTime(date.getTime() + newInterval*60*1000);
+       return date;
+     };
+ while (currentDate <= endDate) {
+   dates.push(currentDate);
+   currentDate = addTime.call(currentDate, interval);
+ }
+ return dates;
+
 }

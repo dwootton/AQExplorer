@@ -5,9 +5,9 @@ class AQMap {
     //OLD: this.pm25Domain = [4, 8, 12, 20, 28, 35, 42, 49, 55, 150, 250, 350];
     //this.colorRange = ['rgba(0,104,55,.2)', 'rgba(254,237,222,1)', 'rgba(253,190,133,1)', 'rgba(253,141,60,1)', 'rgba(230,85,13,1)', 'rgba(166,54,3,1)', 'rgba(215,48,39,1)', 'rgba(165,0,38,1)']; //['#a50026','#d73027','#f46d43','#fdae61','#fee08b','#ffffbf','#d9ef8b','#a6d96a','#66bd63','#1a9850','#006837'];
     //this.pm25Domain = [0,12, 35, 42, 55, 150, 250];
-    //this.colorRange = ['rgba(180,224,180,.1)', 'rgba(196, 186, 185,.5)', 'rgba(155,136,135,1)', 'rgba(116,89,88,1)', 'rgba(77,45,45,1)', 'rgba(215,48,39,1)']; //['#a50026','#d73027','#f46d43','#fdae61','#fee08b','#ffffbf','#d9ef8b','#a6d96a','#66bd63','#1a9850','#006837'];
-    //this.pm25Domain = [0,12, 35, 55, 150, 250];
-    this.colorRange = ['rgba(0,104,55,.2)', 'rgba(102,189,99,1)', 'rgba(255,239,139,1)', 'rgba(255,180,33,1)', 'rgba(253,174,97,1)', 'rgba(244,109,67,1)', 'rgba(215,48,39,1)', 'rgba(165,0,38,1)']; //['#a50026','#d73027','#f46d43','#fdae61','#fee08b','#ffffbf','#d9ef8b','#a6d96a','#66bd63','#1a9850','#006837'];
+    //this.colorRange = ['rgba(180,186,180,.1)', 'rgba(196, 186, 185,.5)', 'rgba(155,136,135,1)', 'rgba(116,89,88,1)', 'rgba(77,45,45,1)', 'rgba(215,48,39,1)']; //['#a50026','#d73027','#f46d43','#fdae61','#fee08b','#ffffbf','#d9ef8b','#a6d96a','#66bd63','#1a9850','#006837'];
+    //this.pm25Domain = [0,20, 35, 55, 150, 250];
+    this.colorRange = ['rgba(0,104,55,.1)','rgba(0,104,55,.5)', 'rgba(102,189,99,1)', 'rgba(255,239,139,1)', 'rgba(255,180,33,1)', 'rgba(253,174,97,1)', 'rgba(244,109,67,1)', 'rgba(215,48,39,1)', 'rgba(165,0,38,1)']; //['#a50026','#d73027','#f46d43','#fdae61','#fee08b','#ffffbf','#d9ef8b','#a6d96a','#66bd63','#1a9850','#006837'];
     this.pm25Domain = [0,4,12, 35, 55, 85,150, 250, 350];
   /*let lightGray = "rgba(240, 255, 240, 0.3)", //Option 1
         lightGreen = "rgba(219, 241, 215, 0.6)",
@@ -15,15 +15,16 @@ class AQMap {
         mediumOrange = "rgba(245, 209, 161,0.9)",
         red = "rgba(212, 48, 48,0.9)",
         darkRed = "rgba(107, 5, 50,1.0)";
-    /*this.colorRange = [d3.color(lightGray),d3.color(lightGreen),d3.color(lightYellow), d3.color(mediumOrange),d3.color(red),d3.color(darkRed)];
+    this.colorRange = [d3.color(lightGray),d3.color(lightGreen),d3.color(lightYellow), d3.color(mediumOrange),d3.color(red),d3.color(darkRed)];
       this.pm25Domain = [0,12, 35, 55, 150, 250];
+      /*
 154	146	141
       [rgba(237,	225,	216,.3),rgba(154,146,141,.5),rgba(120,125,122,.9),rgba(126,98,77,0.9),rgba(79,75,72,0.9),rgba(54,25,58,0.9)]
 79,75,72
     this.colorRange = [d3.color(lightGreen),d3.color(mediumOrange),d3.color(red),d3.color(darkRed)];
     this.pm25Domain = [0,50 ,120,200];*/
     //this.colorRange = ["rgba(237,	225,	216,.1)","rgba(154,146,141,.2)","rgba(120,125,122,.6)","rgba(126,98,77,0.9)","rgba(93,64,52,0.9)","rgba(93, 31, 52,0.9)","rgba(54,25,58,0.9)"];
-    //this.pm25Domain = [0,12,33,55,105,155,250];
+    //this.pm25Domain = [0,20,33,55,105,155,250];
     window.controller.colorRange = this.colorRange;
     window.controller.pm25Domain = this.pm25Domain;
 
@@ -31,7 +32,7 @@ class AQMap {
     this.colorMap = d3.scaleThreshold()
       .domain(this.pm25Domain)
       .range(this.colorRange);*/
-    this.colorMap = d3.scaleLinear()
+    this.colorMap = d3.scaleThreshold()
       .domain(this.pm25Domain)
       .range(this.colorRange);
 
