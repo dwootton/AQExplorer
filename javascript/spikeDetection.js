@@ -1,12 +1,12 @@
 class SpikeDetector {
   constructor(sensors) {
-
+    d3.selectAll('#spikeSVG').remove();
     this.spikeSelectDiv = d3.select(".spike-selector").append('svg') /*.append('g')*/ .attr('id', 'spikeSVG').attr('border','5px solid red').append('g')
     this.spikeSelectDiv
       .attr('transform', 'translate(0,15)');
 
     this.sensorList = sensors;
-    this.allSensorsData = this.gatherAllSensorData();
+    //this.allSensorsData = window.controller.selector.gatherSensorDataForEntireTime(sensors);
 
     //runs the signal detection code on the data
     //let processedData = performSignalDetection();
@@ -15,65 +15,25 @@ class SpikeDetector {
 
   }
 
-
-
-  /**
-   * Requires that sensorList has been populated.
-   * @return {[type]} [description]
-   */
-  gatherAllSensorData() {
-    console.log(this.sensorList);
-    let promises = [];
-    for (let i = 0; i < this.sensorList.length; i++) {
-      let sensorID = this.sensorList[i].id;
-      let sensorLat = this.sensorList[i].lat;
-      let sensorLong = this.sensorList[i].long;
-
-      let url = "https://www.air.eng.utah.edu/dbapi/api/rawDataFrom?id=" + sensorID + "&sensorSource=airu&start=" + window.controller.startDate.toISOString() + "&end=" + window.controller.endDate.toISOString() + "&show=pm25"
-      console.log(url);
-      promises[i] = fetch(url).then(function(response) {
-        return response.text();
-      }).catch((err) => {
-        console.log(err);
-      });
-
-
-    }
-    Promise.all(promises.map(p => p.catch(() => undefined)))
-
-    Promise.all(promises).then(values => {
-      let parsedVals = [];
-      for (let i = 0; i < values.length; i++) {
-        let sensorID = this.sensorList[i].id;
-        let sensorLat = this.sensorList[i].lat;
-        let sensorLong = this.sensorList[i].long;
-        let readings = JSON.parse(values[i]).data
-        if (readings[0]) {
-          let obj = {
-            id: sensorID,
-            lat: sensorLat,
-            long: sensorLong,
-            pm25: readings
-          };
-          parsedVals.push(obj)
-        } else {
-          let obj = {
-            id: sensorID,
-            lat: sensorLat,
-            long: sensorLong,
-            pm25: []
-          };
-          parsedVals.push(obj)
-        }
-      }
-      this.allSensorsData = parsedVals;
-
-      this.processedData = this.performSignalDetection();
-      //this.gatherModelData();
-      this.drawDetectedElements();
-      return values;
-    });
+  addData(sensorData){
+    this.allSensorsData = sensorData;
   }
+
+// https://air.eng.utah.edu/dbapi/api/getEstimatesForLocation?location_lat=40.78756024557722&location_lng=-111.84837341308594&start=2018-07-08T15:26:05Z&end=2018-07-09T15:26:05Z
+// https://air.eng.utah.edu/dbapi/api/getEstimatesForLocation?location_lat=41.721147&location_lng=-112.182112&start=2019-02-24T22:00:00Z&end=2019-02-25T20:00:00Z
+  getSensorSource(id){
+    if(id){
+      console.log(id.slice(0,3));
+      if(id.length > 4 && id.slice(0,3)=="S-A-"){ //if AirU sensor was selected
+          return "airu"
+      } else {
+        return "Purple Air";
+      }
+    }
+
+  }
+
+
 
   removeSVG() {
     d3.select(".spike-selector").select('svg').remove('*');
@@ -135,7 +95,6 @@ class SpikeDetector {
       this.allSensorsData = parsedVals;
       console.log(this.allSensorsData);
       this.processedData = this.performSignalDetection();
-      console.log(this.processedData);
       //this.gatherAllModelData();
       this.drawDetectedElements();
       return values;
@@ -148,9 +107,11 @@ class SpikeDetector {
     let spikes = [];
     let counter = 1;
     this.allSensorsData.forEach(monitor => { // for each air quality monitor
+      console.log(monitor);
       if (this.isEmpty(monitor.signalDetection) || !monitor.signalDetection) { //if it doesn't have any recordings, skip
         return;
       }
+
       for (let i = 0; i < monitor.signalDetection.signals.length - 2; i++) { //for each measurment in the monitor
 
         if (monitor.pm25[i].pm25 > 60) { // monitor.signalDetection.signals[i][1] === 1 && parseInt(monitor.pm25[i].pm25) > 50 &&  && monitor.signalDetection.signals[i][1] === 1 ) { //if the signal value is 1 (ie there is a peak), signals is not offset at there is no
@@ -223,19 +184,22 @@ class SpikeDetector {
     let result = []
     console.log(spikes)
     for (let i = 0; i < spikes.length; i++) { // starting at 1 so not to index at spike[-1], No increment as you only want to advance to the next spike in the while loop
-      let encounteredTime = new Date(spikes[i].measurements[60].time)
+      if(!spikes[i].reading || !spikes[i].reading[1]){
+        continue;
+      }
+      let encounteredTime = new Date(spikes[i].reading[1].time)
       encounteredTime = encounteredTime.getTime()
       let hourList = [];
       console.log(spikes[i]);
-      while (i < spikes.length && (Math.abs(encounteredTime - new Date(spikes[i].measurements[60].time).getTime()) < interval * 60 * 1000)) { // while the new spike is still in the same hour
-        console.log(encounteredTime - new Date(spikes[i].measurements[60].date).getTime())
+      while (i < spikes.length && (Math.abs(encounteredTime - new Date(spikes[i].reading[1].time).getTime()) < interval * 60 * 1000)) { // while the new spike is still in the same hour
+        console.log(encounteredTime - new Date(spikes[i].reading[1].time).getTime())
         hourList.push(spikes[i]);
         i++;
       }
       console.log(hourList);
 
       let max = hourList.reduce(function(prev, current) {
-        return (prev.measurements[60].value > current.measurements[60].value) ? prev : current
+        return (prev.reading[1].pm25 > current.reading[1].pm25) ? prev : current
       });
 
       result.push(max);
@@ -252,7 +216,7 @@ class SpikeDetector {
         bottom: 30,
         left: 10
       },
-      width = 200,
+      width = 325,
       barHeight = 35,
       barWidth = (width - margin.left - margin.right);
 
@@ -279,7 +243,7 @@ class SpikeDetector {
 
     this.root.eachBefore(function(node) {
       node.x = ++index * barHeight;
-      node.y = node.depth*10;
+      node.y = 10; //node.depth*10;
     });
 
     source.x0 = 0;
@@ -417,10 +381,12 @@ class SpikeDetector {
    */
   performSignalDetection() {
     let data = [];
+    console.log(this.allSensorsData);
     this.allSensorsData.forEach((monitor) => {
       let SIG_LAG = 60;
       let SIG_THRESH = 5;
       let SIG_INF = .001;
+      console.log(monitor);
       //monitor.signalDetection = smoothedZScore(monitor.values,SIG_LAG, SIG_THRESH,SIG_INF);
       monitor.signalDetection = this.smoothedZScore2(monitor.pm25, SIG_LAG, SIG_THRESH, SIG_INF);
     }) //end data.forEach

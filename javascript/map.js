@@ -1,12 +1,37 @@
 class AQMap {
 
   constructor() {
-    this.colorRange = ['rgb(0,104,55,.2)', 'rgb(0,104,55,.5)', 'rgb(0,104,55)', 'rgb(26,152,80)', 'rgb(102,189,99)', 'rgb(166,217,106)', 'rgb(217,239,139)', 'rgb(255,255,191)', 'rgb(254,224,139)', 'rgb(253,174,97)', 'rgb(244,109,67)', 'rgb(215,48,39)', 'rgb(165,0,38)']; //['#a50026','#d73027','#f46d43','#fdae61','#fee08b','#ffffbf','#d9ef8b','#a6d96a','#66bd63','#1a9850','#006837'];
-    this.pm25Domain = [4, 8, 12, 20, 28, 35, 42, 49, 55, 150, 250, 350];
-
+    //OLD: this.colorRange = ['rgb(0,104,55,.2)', 'rgb(0,104,55,.5)', 'rgb(0,104,55)', 'rgb(26,152,80)', 'rgb(102,189,99)', 'rgb(166,217,106)', 'rgb(217,239,139)', 'rgb(255,255,191)', 'rgb(254,224,139)', 'rgb(253,174,97)', 'rgb(244,109,67)', 'rgb(215,48,39)', 'rgb(165,0,38)']; //['#a50026','#d73027','#f46d43','#fdae61','#fee08b','#ffffbf','#d9ef8b','#a6d96a','#66bd63','#1a9850','#006837'];
+    //OLD: this.pm25Domain = [4, 8, 12, 20, 28, 35, 42, 49, 55, 150, 250, 350];
+    //this.colorRange = ['rgba(0,104,55,.2)', 'rgba(254,237,222,1)', 'rgba(253,190,133,1)', 'rgba(253,141,60,1)', 'rgba(230,85,13,1)', 'rgba(166,54,3,1)', 'rgba(215,48,39,1)', 'rgba(165,0,38,1)']; //['#a50026','#d73027','#f46d43','#fdae61','#fee08b','#ffffbf','#d9ef8b','#a6d96a','#66bd63','#1a9850','#006837'];
+    //this.pm25Domain = [0,12, 35, 42, 55, 150, 250];
+    //this.colorRange = ['rgba(180,186,180,.1)', 'rgba(196, 186, 185,.5)', 'rgba(155,136,135,1)', 'rgba(116,89,88,1)', 'rgba(77,45,45,1)', 'rgba(215,48,39,1)']; //['#a50026','#d73027','#f46d43','#fdae61','#fee08b','#ffffbf','#d9ef8b','#a6d96a','#66bd63','#1a9850','#006837'];
+    //this.pm25Domain = [0,20, 35, 55, 150, 250];
+    this.colorRange = ['rgba(0,104,55,.1)','rgba(0,104,55,.5)', 'rgba(102,189,99,1)', 'rgba(255,239,139,1)', 'rgba(255,180,33,1)', 'rgba(253,174,97,1)', 'rgba(244,109,67,1)', 'rgba(215,48,39,1)', 'rgba(165,0,38,1)']; //['#a50026','#d73027','#f46d43','#fdae61','#fee08b','#ffffbf','#d9ef8b','#a6d96a','#66bd63','#1a9850','#006837'];
+    this.pm25Domain = [0,4,12, 35, 55, 85,150, 250, 350];
+  /*let lightGray = "rgba(240, 255, 240, 0.3)", //Option 1
+        lightGreen = "rgba(219, 241, 215, 0.6)",
+        lightYellow = "rgba(240, 240, 215,0.8)",
+        mediumOrange = "rgba(245, 209, 161,0.9)",
+        red = "rgba(212, 48, 48,0.9)",
+        darkRed = "rgba(107, 5, 50,1.0)";
+    this.colorRange = [d3.color(lightGray),d3.color(lightGreen),d3.color(lightYellow), d3.color(mediumOrange),d3.color(red),d3.color(darkRed)];
+      this.pm25Domain = [0,12, 35, 55, 150, 250];
+      /*
+154	146	141
+      [rgba(237,	225,	216,.3),rgba(154,146,141,.5),rgba(120,125,122,.9),rgba(126,98,77,0.9),rgba(79,75,72,0.9),rgba(54,25,58,0.9)]
+79,75,72
+    this.colorRange = [d3.color(lightGreen),d3.color(mediumOrange),d3.color(red),d3.color(darkRed)];
+    this.pm25Domain = [0,50 ,120,200];*/
+    //this.colorRange = ["rgba(237,	225,	216,.1)","rgba(154,146,141,.2)","rgba(120,125,122,.6)","rgba(126,98,77,0.9)","rgba(93,64,52,0.9)","rgba(93, 31, 52,0.9)","rgba(54,25,58,0.9)"];
+    //this.pm25Domain = [0,20,33,55,105,155,250];
     window.controller.colorRange = this.colorRange;
     window.controller.pm25Domain = this.pm25Domain;
 
+    /* For Sequential:
+    this.colorMap = d3.scaleThreshold()
+      .domain(this.pm25Domain)
+      .range(this.colorRange);*/
     this.colorMap = d3.scaleThreshold()
       .domain(this.pm25Domain)
       .range(this.colorRange);
@@ -18,6 +43,17 @@ class AQMap {
     this.shiftKeyPressed = false;
 
     window.onkeydown = (e) => {
+      if(window.controller.slider == null){
+        return;
+      }
+      if(e.key == "ArrowLeft"){
+
+        window.controller.slider.moveSlider(-5*60*1000);// move left by 5 minutes
+        e.preventDefault();
+      } else if(e.key == "ArrowRight"){
+        window.controller.slider.moveSlider(5*60*1000);// move right by 5 minutes
+        e.preventDefault();
+      }
       this.shiftKeyPressed = ((e.keyIdentifier == 'Shift') || (e.shiftKey == true));
     }
 
@@ -179,7 +215,7 @@ class AQMap {
     }]
 
     this.myMap = new google.maps.Map(document.getElementById('map'), {
-      zoom: 11,
+      zoom: 10.5,
       center: {
         lat: 40.69255337197885,
         lng: -111.86895401000976
@@ -190,19 +226,24 @@ class AQMap {
 
     });
 
+    google.maps.event.addListener(this.myMap, 'idle', ()=>{
+      this.loadedTiles = true;
+    });
+
     this.toolTip = d3.select("body").append("div")
       .attr("class", "mapTooltip")
       .style("opacity", 0);
     this.sensorWidth = 11;
 
-    /* Create legend
+    /* Create legend*/
     let legendColorMap = d3.scaleThreshold()
       .domain(this.pm25Domain.reverse())
       .range(this.colorRange.reverse());
 
     let colorLegend = d3.legendColor()
       .labelFormat(d3.format(".0f"))
-      .labels(d3.legendHelpers.thresholdLabels)
+      .cells(window.controller.pm25Domain.slice(0, -1))
+      //.labels(d3.legendHelpers.thresholdLabels)
       .scale(this.colorMap)
       .shapePadding(2)
       .shapeWidth(50)
@@ -211,13 +252,14 @@ class AQMap {
       .ascending(true);
 
     let testLegend = d3.select('#pm25Legend')
-      .attr('width', 275)
-      .attr('height', 300)
-      //.attr('transform', 'translate(200,-200)')
+      .attr('width', 100)
+      .attr('height', 200)
+      .attr("transform","translate(10,10)")
       .append("g")
-      // .attr("transform", "translate(10, 10)")
       .call(colorLegend);
-      */
+
+    this.myMap.controls[google.maps.ControlPosition.TOP_RIGHT].push(document.getElementById('pm25Legend'));
+
     this.setUpSourceMenu();
 
 
@@ -239,8 +281,8 @@ class AQMap {
   }
 
   setUpSourceMenu(){
-    let mapLegend = document.getElementById('mapLegend');
-    this.myMap.controls[google.maps.ControlPosition.TOP_RIGHT].push(mapLegend);
+    //let mapLegend = document.getElementById('mapLegend');
+    //this.myMap.controls[google.maps.ControlPosition.TOP_RIGHT].push(mapLegend);
     let sensorSourceMenu = document.getElementById('radioButton');
     this.myMap.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(sensorSourceMenu);
     let div = document.createElement('div');
@@ -259,7 +301,7 @@ class AQMap {
           button.checked = true;
         }
         //item.innerHTML= '<input type="checkbox" name="item[]" value="'+label+'>';
-        console.log(button);
+
         //let item = label + newBox;
         let label = document.createElement('label');
         label.innerHTML = sourceTypes[i];
@@ -269,7 +311,7 @@ class AQMap {
         sensorSourceMenu.appendChild(innerDiv);
         innerDiv.onclick = (e)=>{
           let source = e.toElement.value;
-          console.log(source)
+
           switch(source){
             case "Purple Air":
               source = "purpleAir";
@@ -283,7 +325,7 @@ class AQMap {
 
           }
           window.controller.selector.newTime = true;
-          console.log('INSIDE OF click',source);
+
           window.controller.selector.setSensorSource(source);
         }
     }
@@ -366,7 +408,6 @@ END MODE REMOVAL
 
       let layer = d3.select(this.getPanes().overlayMouseTarget).append("div") // floatPane as I want sensors to be on top
         .attr("class", "sensors");
-      console.log("LAYER",layer);
 
       // Draw each marker as a separate SVG element.
       overlay.draw = function() {
@@ -376,11 +417,9 @@ END MODE REMOVAL
         let marker = layer.selectAll("svg")
           .data(sensorData)
           .each(transform)
-          console.log(marker)
 
         marker
           .on("mouseover", function(d) {
-            console.log(d3.select(this).attr("cx") + that.sensorWidth);
             let matrix = this.getScreenCTM()
               .translate(+this.getAttribute("cx"), +this.getAttribute("cy"));
 
@@ -393,7 +432,7 @@ END MODE REMOVAL
 
 
             let sensorID = d.id;
-            window.controller.timeChartLegend.dispatchSensorEvent(sensorID,'mouseenter')
+            /*window.controller.timeChartLegend.dispatchSensorEvent(sensorID,'mouseenter')*/
             /*let prevSelection = d3.select('#sensorPath' + sensorID)
               .transition()
               .duration(500)
@@ -406,7 +445,6 @@ END MODE REMOVAL
               .duration(500)
               .style("opacity", 0);
             let sensorID = d.id;
-            console.log(d3.selectAll('#sensorPath' + sensorID))
             //window.controller.timeChartLegend.dispatchSensorEvent(sensorID,'mouseleave')
             /*
             let prevSelection = d3.select('#sensorPath' + sensorID)
@@ -418,13 +456,13 @@ END MODE REMOVAL
               */
           })
           .on("click", function(sensor) {
-            console.log(sensor,"CLICKED!!")
             if (that.marker) {
               that.marker.setMap(null);
             }
 
             window.controller.selectedSensor = sensor;
-            console.log(d3.selectAll('#selected'));
+            let myLatlng = new google.maps.LatLng(+sensor.lat, +sensor.long);
+            window.controller.map.myMap.panTo(myLatlng);
             d3.selectAll('#selected')
               .attr('id', (d)=> {
                 return "marker"+d.id;
@@ -438,6 +476,7 @@ END MODE REMOVAL
             that.selectSensor(sensor);
             //d3.select(this).attr('transform','translate(-30px,-30px)')
             selector.grabIndividualSensorData(sensor);
+            //selector.grabIndividualModelData(sensor);
             //d3.select(this).attr("id", "selected");
 
             /*d3.select(this).selectAll('circle')
@@ -462,6 +501,9 @@ END MODE REMOVAL
           .enter().append("svg")
           .each(transform)
           .attr('id', (d)=> {
+            if(window.controller.selectedSensor && d.id==window.controller.selectedSensor.id){
+              return "selected";
+            }
             return "marker"+d.id;
           })
           .attr("class", "marker");
@@ -469,9 +511,8 @@ END MODE REMOVAL
         newMarkers.exit().remove();
 
         newMarkers.append("circle")
-          .attr("r", 2)
+          /*.attr("r", 2)*/
           .attr('stroke', (d)=>{
-            console.log(window.controller.selectedSensor, d.id);
             if(window.controller.selectedSensor && d.id==window.controller.selectedSensor.id){
               return "gold";
             }
@@ -485,14 +526,13 @@ END MODE REMOVAL
           })
           .attr("cx", padding)
           .attr("cy", padding)
-          .transition()
-          .duration(500)
+          /*.transition()
+          .duration(500)*/
           .attr("r", (d)=>{
             if(window.controller.selectedSensor && d.id==window.controller.selectedSensor.id){
               return 10;
             }
             else return 6.5;
-            return 1;
           })
           .attr("fill", (d) => {
             if (d.pm25 < 0) {
@@ -571,12 +611,148 @@ END MODE REMOVAL
 
     // Bind our overlay to the map…
     overlay.setMap(this.myMap);
+    /*
     if (d3.event) {
       d3.event.preventDefault();
       d3.event.stopPropagation();
     }
+    */
   }
+
+  getDataAtTime(time){
+    // get correct model slice after 50 ms (time to load)
+    if(!this.prevModelCall ){
+      this.prevModelCall = new Date();
+      window.controller.selector.grabAllModelContour(time);
+    }
+
+    //if(this.loadedTiles){
+      this.prevModelCall = new Date();
+      window.controller.selector.grabAllModelContour(time);
+      window.controller.selector.grabAllSensorData(time)
+      this.loadedTiles = false;
+    //}
+
+
+    // get correct time slice for each sensor
+  }
+
+  updateModelContour(contour){
+
+    if (this.lastData) {
+
+      this.myMap.data.forEach((feature) => {
+        this.myMap.data.remove(feature);
+      })
+
+    }
+
+    this.lastData = contour.contour;
+    let that = this;
+    let startDate = new Date();
+    let startStamp = startDate.getTime()
+    let imported = this.myMap.data.addGeoJson(contour.contour)
+    if(imported != null){
+      this.loadedTiles = true;
+    }
+
+    this.myMap.data.setStyle(styleContour);
+    /*this.myMap.data.setStyle(function(feature) {
+      var color = 'gray';
+      var opacity = 0;
+      let value = 10;
+      if (feature.getProperty('value')) {
+        value = feature.getProperty('value')+10;
+        color = that.colorMap(feature.getProperty('value'));
+        opacity = 0.6;
+        console.log(value);
+      }
+      return /** @type {!google.maps.Data.StyleOptions}  ({{
+        fillColor: color,
+        strokeWeight: 0,
+        fillOpacity: opacity,
+
+      },zIndex: value);
+    });*/
+    function styleContour(feature) {
+      var color = 'gray';
+      var opacity = 0;
+      let zIndex = 10;
+      if (feature.getProperty('value')) {
+        zIndex = feature.getProperty('value')*10+10;
+        color = that.colorMap(feature.getProperty('value'));
+        opacity = 0.6;
+      }
+       return {
+              fillColor: color,
+              strokeWeight: 0,
+              fillOpacity: opacity,
+              zIndex:zIndex
+        };
+    }
+    let stopDate = new Date();
+    let stopStamp = startDate.getTime()
+    console.log("d3 contour time: ", (stopStamp - startStamp))
+
+    //let stopDate = new Date();
+    //let stopStamp = stopDate.getTime()
+    /*
+    let labelsMapType = new google.maps.StyledMapType([{
+      // Hide all map features by default
+      stylers: [{
+        visibility: 'off'
+      }]
+    }, {
+      featureType: 'road.highway',
+      stylers: [{
+        visibility: 'on'
+      }]
+    }, {
+      featureType: 'road.arterial',
+      stylers: [{
+        visibility: 'on',
+        color: '#444444'
+      }]
+    }, {
+      featureType: 'administrative',
+      stylers: [{
+        visibility: 'on'
+      }]
+    }, {
+      "featureType": "road",
+      "elementType": "labels",
+      "stylers": [{
+        "visibility": "off"
+      }]
+    }, {
+      "elementType": "geometry",
+      "stylers": [{
+        "color": "#f5f5f5"
+      }]
+    }], {
+      name: 'Labels',
+      id: "MyLabels"
+    });
+
+    // Add to the map's overlay collection
+    this.myMap.overlayMapTypes.clear();
+    let labelsMap = this.myMap.overlayMapTypes.push(labelsMapType);
+
+    // Select the just created highway labels and bring it to the front.
+    d3.select("#map > div > div > div:nth-child(1) > div:nth-child(1) > div:nth-child(1)").style('z-index', 1000000).style('opacity', 0.5);
+    */
+
+
+  }
+
+
+
+
+
   updateModel(modelData) {
+    if(modelData.data){
+      modelData = modelData.data;
+    }
 
     this.modelData = modelData;
 
@@ -640,7 +816,6 @@ END MODE REMOVAL
 
     if (this.lastData) {
       this.myMap.data.forEach((feature) => {
-        console.log(feature)
         this.myMap.data.remove(feature);
       })
     }
@@ -710,135 +885,6 @@ END MODE REMOVAL
 
     // Select the just created highway labels and bring it to the front.
     d3.select("#map > div > div > div:nth-child(1) > div:nth-child(1) > div:nth-child(1)").style('z-index', 1000000).style('opacity', 0.5);
-
-
-    /*
-		let heatLayer = L.geoJSON(geojson.features);
-		heatLayer.addTo(this.myMap);
-*/
-
-    /*
-    		L.geoJSON(geojson.features, {
-                style: function (feature) {
-                	console.log(feature);
-                	if(feature.properties.value < 15){
-                		return {weight: 1, color: "#00ff00", "fill-opacity": 0.2}
-                	}
-                	return {weight: 1, color: "#ff0000", "fill-opacity": 0.2}
-
-                }
-            }).addTo(this.myMap);
-
-    */
-
-    /*
-		 svg = d3.select("#map").select("svg");
-		let g = d3.select("#map").select("svg").select('g');
-			g.attr("class", "leaflet-zoom-hide");
-
-	    svg.selectAll("path").remove();
-	    this.polygons = d3.contours()
-		        .size([this.modelWidth,this.modelHeight]) // NOTE: Make this a param
-		        .thresholds(d3.range(0, d3.max(modelData), 1))
-	      	(modelData);
-	     console.log("before",this.polygons)
-
-	    //let p1 = d3.geom.polygon(this.polygons);
-
-		let longScale = d3.scaleLinear([0,10]).range([-112.001349000000,-111.713403000000])
-		  let latScale = d3.scaleLinear([0,10]).range([40.81048,40.59885])
-		  console.log(longScale(1))
-
-		  for(let multiPolygon of this.polygons){
-		    console.log(multiPolygon)
-		    let coordinatesArr = [];
-
-		    if(multiPolygon.coordinates.length != 0){
-		      console.log(multiPolygon.coordinates)
-		      coordinatesArr = multiPolygon.coordinates[0][0];
-		    } else {
-		      break;
-		    }
-
-
-		    for( let coordinate of coordinatesArr){
-		      //console.log("[0][0]",coordinate[0][0])
-
-		      coordinate[0] = longScale(parseFloat(coordinate[0]));
-		      coordinate[1] = latScale(parseFloat(coordinate[1]));
-		      //console.log(parseInt(coordinate[0]))
-		      //console.log("[0]",latScale(parseInt(coordinate[0])))
-		    }
-		  }
-
-		  console.log("after",this.polygons)
-
-		//L.geoJSON(this.polygons).addTo(this.myMap);
-		let that = this;
-		/*
-		let that = this;
-		new L.GeoJSON(this.polygons, {
-			  style: function(feature) {
-			      return feature.properties.style
-			  }
-			}).addTo(this.myMap);
-
-		function projectPoint(x, y) {
-		  var point = that.myMap.latLngToLayerPoint(new L.latLng(y, x));
-		  this.stream.point(point.x, point.y);
-		}
-
-
-		let transform = d3.geoTransform({point: projectPoint});
-		let lineGenerator = d3.geoPath().projection(transform);
-
-		let contours = svg.append('g').attr('class','heatMap').selectAll("path")
-	    	.data(this.polygons);
-
-		let heatMap = contours
-	    .enter().append("path")
-	      .attr("d", lineGenerator)//d3.geoPath(d3.geoIdentity().scale(this.width / this.modelWidth))
-	      .attr("fill", (d) => { return this.colorMap(d.value)})
-	      .attr("fill-opacity",0.8);
-
-	    // Now because D3 is not generic leaflet, we have to defien what should happen to the SVG when
-        // a user scrolls or zooms. So on "viewreset" the function "reset" is called
-            this.myMap.on("viewreset", reset);
-
-            // On first load, the user will not have paned or zoomed, but the SVG still needs to be put in the
-            // right place, so the function reset is called.
-            reset();
-
-            // This function places the SVG at the right position, even after zoom and/or pan
-            function reset() {
-
-                // Get the bounding Box
-                let boundsKreis = [[40.598850,-112.001349],[40.810476,-111.713403]]
-
-                // save top left and bottom right corner coordinates in variables
-                var topLeft = boundsKreis[0],
-                        bottomRight = boundsKreis[1];
-
-                // reposition and rescale SVG element
-                svg.attr("width", bottomRight[0] - topLeft[0])
-                        .attr("height", bottomRight[1] - topLeft[1])
-                        .style("left", topLeft[0] + "px")
-                        .style("top", topLeft[1] + "px");
-
-                // reposition all geometries in SVG
-                svg.selectAll("g.heatMap").attr("transform", "translate(" + -topLeft[0] + "," + -topLeft[1] + ")");
-                heatMap.attr("d", lineGenerator);
-            }
-
-		/*
-
-
-
-	    l
-
-	    d3.geoIdentity()
-  			.fitExtent([[left,top],[right,bottom]], geojsonObject); });
-  			*/
 
 
     // consult this for d3 on top of leaflet: http://www.sydneyurbanlab.com/Tutorial7/tutorial7.html

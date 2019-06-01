@@ -14,7 +14,10 @@
 	<script src="https://d3js.org/d3-hsv.v0.1.min.js"></script>
 	<script src="https://d3js.org/d3-contour.v1.min.js"></script>
 	<script src="https://d3js.org/d3-hierarchy.v1.min.js"></script>
+	<script src="https://unpkg.com/d3-simple-slider"></script>
 
+	<!-- Downample algorithm
+	<script src="http://highcharts.base.is/highcharts-downsample.js"></script> -->
 
 	<!-- Latest Bootstrap CSS, JS -->
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
@@ -34,14 +37,22 @@
 	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA3X5TPjGMtpRK1NnVeuDOCAwvZSKPT564&callback=initMap"></script>
 	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA3X5TPjGMtpRK1NnVeuDOCAwvZSKPT564&libraries=drawing"></script>
 
+	<!-- Turf -->
+	<script src="https://cdn.jsdelivr.net/npm/@turf/turf@5/turf.min.js"></script>
+
 	<title>
 		AQ Explorer
 	</title>
 </head>
 
 <body>
-	<input type="text" name="datetimes" value="01/01/2018 - 01/15/2018" />
+	<div id="overlay">
+		<div class="spinner"></div>
+		<div id="overlay-text">Loading Content</div>
+	</div>
 
+	<input type="text" name="datetimes" value="01/01/2018 - 01/15/2018" />
+	<div id = "modeSelector"> <span><strong> Tool Mode:</strong> </span></div>
 	<div class="wrapper">
 
 		<!-- Sidebar
@@ -139,14 +150,14 @@
 				<!-- <div class="col-12"> -->
 					<div  height='650' width = '600' id="map"> </div>
 
-				<div id="radioButton"></div>
-				<div id="mapLegend">
+					<div id="radioButton"></div>
+				<!---<div id="mapLegend">
 					<img
 						src="/Designs/ColorLegend.svg"
 						alt="PM 2.5 Color Scale."
 						height="280px"
 						width="94px" />
-				</div>
+				</div>-->
 				<!--
 				<div class="col-2">
 					<div id="radioButton"></div>
@@ -174,6 +185,24 @@
 				</div>
 				<!--</div> -->
 			</div>
+		<div class="row align-items-center">
+			<g id='sliderGroup'>
+				<div class="row align-items-center">
+					<div class="col-sm">
+						<div id = "sliderMetricLabel">
+							<span> Metric: </span>
+						</div>
+						<div id="sliderMetric">
+						</div>
+					</div>
+					<div class="col-lg">
+						<p id="value-new-york-times"></p>
+					</div>
+				</div>
+				<svg id="slider"> </svg>
+
+
+			</g>
 		</div>
 
 			<!--<div class="row">class="col-2 spike-selector"
@@ -188,14 +217,16 @@
 					<svg id="timeChart"> </svg>
 				</div>
 			</div>
+			<svg id="pm25Legend"></svg>
 		</div>
 
 
 
 </body>
+<script src="javascript/component/keybinding.js"></script>
 <script src="javascript/component/treelist.js"></script>
 <script src="javascript/spikeDetection.js"></script>
-
+<script src="javascript/slider.js"></script>
 <script src="javascript/component/d3CloseButton.js"></script>
 
 <script src="javascript/interpolatedChart.js"> </script>

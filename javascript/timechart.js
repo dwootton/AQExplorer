@@ -5,8 +5,8 @@ class timeChart {
 		console.log("timechart created!")
 
 	let boundingWidth = document.getElementById('map').offsetWidth;
-	this.margin = {top: 5, right: 5, bottom: 110, left: 30}
-	this.margin2 = {top: 270, right: 5, bottom: 30, left: 30}
+	this.margin = {top: 5, right: 30, bottom: 95, left: 25}
+	this.margin2 = {top: 190, right: 30, bottom: 30, left: 25}
 
 	this.svg = d3.select("#timeChart").attr('transform','translate('+this.margin.left+','+this.margin.top+')');
 	this.svg.attr('width',1000);
@@ -15,7 +15,7 @@ class timeChart {
 
 
 
-	this.svg.attr('height',500);
+	this.svg.attr('height',490);
 
 		//this.svg.attr('height',350).attr('width',100%);
 
@@ -74,6 +74,7 @@ class timeChart {
 
 		this.legend = new timeChartLegend();
 		window.controller.timeChartLegend = this.legend;
+		this.update();
 	}
 
 
@@ -105,6 +106,8 @@ class timeChart {
 	}
 
 	updateSlider(date){
+
+		window.controller.selector.setSelectedDate(date,'timeChart');
 	  this.selectedDate = date;
 	  console.log(this.xScale(this.selectedDate))
 	  console.log(this.x2Scale(this.selectedDate));
@@ -190,6 +193,9 @@ class timeChart {
 		if(data == modelData){
 			modelData = jQuery.extend(true, {}, data).data;
 			//modelData.data;
+			this.sameData = true;
+		} else {
+			this.sameData = false;
 		}
 
 
@@ -283,8 +289,13 @@ class timeChart {
 		this.slider = this.focus.append("line");
 		console.log(this.slider);
 
-		console.log(selector.selectedDate);
-		this.updateSlider(selector.selectedDate);
+		console.log(window.controller.selectedDate);
+		if(window.controller.selectedDate != undefined){
+			//window.controller.selector.setSelectedDate(selector.selectedDate,'timeChart');
+			this.updateSlider(window.controller.selectedDate);
+		}
+
+
 
 
 		function brushed() {
@@ -353,15 +364,17 @@ class timeChart {
 	      .attr('stroke','gray')
 	      .attr('stroke-opacity',0.6)
 	      .attr("id","sensorPath"+this.sensorInfos[i].id);
+			if(!this.sameData){
+				let modelPaths = this.focus.append("path")
+		  	  .datum(this.modelDatas[i])
+		  	  .attr("class","modelLine")
+		  	  .attr("d", this.modelLineGenerator)
+		  	  .attr('stroke-width','2px')
+		  	  .attr('stroke','darkgrey')
+		  	  .attr('stroke-opacity',0.6)
+		  	  .attr("id","modelPath"+this.sensorInfos[i].id);
+			}
 
-	    let modelPaths = this.focus.append("path")
-	  	  .datum(this.modelDatas[i])
-	  	  .attr("class","modelLine")
-	  	  .attr("d", this.modelLineGenerator)
-	  	  .attr('stroke-width','2px')
-	  	  .attr('stroke','darkgrey')
-	  	  .attr('stroke-opacity',0.6)
-	  	  .attr("id","modelPath"+this.sensorInfos[i].id);
 
 	  	sensorPaths.on("mouseover",function(){
 	  		if(that.prevSelection){
@@ -429,9 +442,8 @@ class timeChart {
           }
           that.selectedDate = new Date(newData.x);
 					window.controller.selectedDate = that.selectedDate
-          selector.selectedDate = that.selectedDate;
-          selector.grabAllSensorData(selector.selectedDate);
-          selector.grabAllModelData(selector.selectedDate)
+          selector.grabAllSensorData(window.controller.selectedDate);
+          selector.grabAllModelData(window.controller.selectedDate);
           that.updateSlider(that.selectedDate)
       })
 	}
@@ -439,6 +451,8 @@ class timeChart {
 	removePoint(index){
 		this.sensorDatas.splice(index, 1);
 		this.modelDatas.splice(index, 1);
+
+
 		this.sensorInfos.splice(index, 1);
 		console.log(this.maxReadings,this.maxModelEstimates,this.stopValues);
 		this.maxReadings.splice(index, 1);
