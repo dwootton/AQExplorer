@@ -529,10 +529,104 @@ grabIndividualSensorData(selectedSensor){
     let url = "https://air.eng.utah.edu/dbapi/api/getGridEstimates?start=" + start + "&end=" + stop;
     console.log(url);
     let timeStart = new Date();
+    // break time into 6 hour chunks
+    let times = generateNewTimes(window.controller.startDate,window.controller.endDate,6*60);
+    console.log(times);
+    /* Start model split up */
+    let promises = [];
+    for (let i = 0; i < times.length-1; i++) {
+      console.log(times[i]);
+      let start = times[i].toISOString().slice(0, -5) + "Z";
+      let stop = times[i+1].toISOString().slice(0, -5) + "Z";
+      let url = "https://air.eng.utah.edu/dbapi/api/getGridEstimates?start=" + start + "&end=" + stop;
+      console.log(url);
+      promises[i] = fetch(url).then(function(response) {
+        return response.text();
+      }).catch((err) => {
+        console.log(err);
+      });
+
+
+    }
+    Promise.all(promises.map(p => p.catch(() => undefined)))
+
+    Promise.all(promises).then(initialValues => {
+      let someValues = []
+      initialValues.forEach(function(value) {
+        let pollutionArray = JSON.parse(value).slice(1,-1);
+
+        someValues.push(pollutionArray);
+      })
+      console.log(initialValues,someValues);
+      let values = [].concat.apply([], someValues);
+      /* If there is a more recent selection */
+
+      /*if(window.controller.selectedDate != time){
+        return;
+      } */
+      this.averagedPM25 = [];
+      this.maxPM25 = []
+      console.log(values);
+      let organizedModelDataCollection = [];
+      let parsedModelData = values//JSON.parse(values);
+      console.log(parsedModelData)
+
+      parsedModelData.shift();
+      parsedModelData.forEach( (element) => {
+        console.log(element);
+        let date = Object.keys(element)[0];
+        console.log(date);
+
+        console.log(element[0]);
+        organizedModelDataCollection.push({
+          time: new Date(date),
+          data: element[date].pm25
+        })
+        this.averagedPM25.push(element[date].pm25.reduce((p,c,_,a) => p + c/a.length,0))
+        this.maxPM25.push(d3.max(element[date].pm25));
+      })
+      if(window.controller.slider){
+        if(window.controller.slider.currentMetric == "Maximum"){
+          this.scentedMetric = this.maxPM25;
+        } else {
+          this.scentedMetric = this.averagedPM25;
+        }
+        window.controller.slider.changeData(this.scentedMetric);
+      }
+
+      console.log(organizedModelDataCollection);
+
+      this.entireModelData = organizedModelDataCollection;
+      this.contours = [];
+      this.entireModelData.forEach((modelSlice)=>{
+        console.log(modelSlice)
+        let contour = this.computeContours(modelSlice);
+        console.log(contour);
+        this.contours.push({
+          contour:contour,
+          time:modelSlice.time
+        })
+      })
+      console.log(this.contours);
+      console.log(this.entireModelData)
+      let timeStop = new Date();
+      console.log(timeStop.getTime()-timeStart.getTime());
+      document.getElementById("overlay").style.display = "none";
+      /*for (time in allModelData) {
+        this.entireModelData = allModelData[time].pm25;
+      }
+      this.updateModelView(); */
+
+      // After all done:
+    });
+    /* End model split up */
+
+
     /* Obtains model grid estimates and re-render map view */
     let modelReq = fetch(url).then( (response)=> {
       return response.text();
     }).then( (values) => {
+      return;
       /* If there is a more recent selection */
 
       /*if(window.controller.selectedDate != time){
@@ -648,12 +742,13 @@ grabIndividualSensorData(selectedSensor){
     let modelReq = fetch(url).then( (response)=> {
       return response.text();
     }).then( (values) => {
-      /* If there is a more recent selection */
 
+      /* If there is a more recent selection */
       if(window.controller.selectedDate != time){
         console.log("MORE RECENT!!!")
         return;
       }
+
       let allModelData = JSON.parse(values)[1]; //Note: Currently broken?
       console.log(allModelData);
       for (time in allModelData) {
