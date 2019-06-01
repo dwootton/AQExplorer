@@ -37,7 +37,7 @@ class Selector {
         this.startDate = new Date(start.format());
         this.endDate = new Date(end.format());
         console.log("about to change dates");
-        window.controller.slider.changeDates();
+
 
         let that = this;
         function hideElements(){
@@ -51,18 +51,13 @@ class Selector {
           window.controller.slider = null;
         }
 
-        if(this.getAllData && this.endDate.getTime()-this.startDate.getTime() > 4*24*60*60*1000){
-          this.getAllData = false;
-          alert('Only parts of the data will be rendered. Select a smaller date range to avoid this.')
-          d3.select('#slider').transition(1000).attr("height","0");
-          d3.select('#spikeSVG').transition(1000).attr("width","0").on("end", hideElements);
-
-
-
-        }
 
 
         if(this.getAllData){
+          if(window.controller.slider){
+            window.controller.slider.changeDates();
+          }
+
           document.getElementById("overlay").style.display = "block";
           showElements();
           d3.select('#slider').transition(1000).attr("height","100");
@@ -79,6 +74,15 @@ class Selector {
               window.controller.slider.changeDates();
             }
           }
+
+          if( this.endDate.getTime()-this.startDate.getTime() > 4*24*60*60*1000){
+            this.getAllData = false;
+            alert('Only parts of the data will be rendered. Select a smaller date range to avoid this.')
+            d3.select('#slider').transition(1000).attr("height","0");
+            d3.select('#spikeSVG').transition(1000).attr("width","0").on("end", hideElements);
+          }
+
+
 
         }
 
@@ -544,7 +548,7 @@ grabIndividualSensorData(selectedSensor){
       parsedModelData.shift();
       parsedModelData.forEach( (element) => {
         console.log(element);
-        let date = Object.keys(element);
+        let date = Object.keys(element)[0];
         console.log(date);
 
         console.log(element[0]);
@@ -555,13 +559,15 @@ grabIndividualSensorData(selectedSensor){
         this.averagedPM25.push(element[date].pm25.reduce((p,c,_,a) => p + c/a.length,0))
         this.maxPM25.push(d3.max(element[date].pm25));
       })
-      if(window.controller.slider.currentMetric == "Maximum"){
-        this.scentedMetric = this.maxPM25;
-      } else {
-        this.scentedMetric = this.averagedPM25;
+      if(window.controller.slider){
+        if(window.controller.slider.currentMetric == "Maximum"){
+          this.scentedMetric = this.maxPM25;
+        } else {
+          this.scentedMetric = this.averagedPM25;
+        }
+        window.controller.slider.changeData(this.scentedMetric);
       }
 
-      window.controller.slider.changeData(this.scentedMetric);
       console.log(organizedModelDataCollection);
 
       this.entireModelData = organizedModelDataCollection;
@@ -591,6 +597,7 @@ grabIndividualSensorData(selectedSensor){
   }
 
   grabAllModelData(time){
+    console.log("All Model Data");
     let requestedTime = new Date(time).getTime();
     if(typeof this.entireModelData == 'undefined' || !this.getAllData){
       this.grabAllModelDataOld(time);
@@ -612,6 +619,7 @@ grabIndividualSensorData(selectedSensor){
     requestedTime = requestedTime.getTime();
     if(typeof this.entireModelData == 'undefined'){
       this.grabAllModelDataOld(time);
+      return;
     }
 
     let contour = this.contours.find((estimate)=>{
