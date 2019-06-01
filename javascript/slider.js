@@ -2,7 +2,7 @@ class Slider {
   constructor(){
 
 
-  var margin = { top: 10, right: 50, bottom: 50, left: 40 },//{ top: 10, right: 50, bottom: 50, left: 40 }
+  var margin = { top: 10, right: 50, bottom: 50, left: 50 },//{ top: 10, right: 50, bottom: 50, left: 40 }
     width = 1490 - margin.left - margin.right,
     height = 100;
 
@@ -304,7 +304,7 @@ class Slider {
   changeDates(){
     this.removeSVG();
 
-    var margin = { top: 10, right: 50, bottom: 50, left: 40 },//{ top: 10, right: 50, bottom: 50, left: 40 }
+    var margin = { top: 10, right: 70, bottom: 50, left: 35 },//{ top: 10, right: 50, bottom: 50, left: 40 }
       width = 1500 - margin.left - margin.right,
       height = 100;
     this.margin = margin;
@@ -404,7 +404,7 @@ class Slider {
     svg.append("g")
       .attr("class", "yAxis")
       .call(yAxis)
-      .attr('transform', `translate(${margin.left-5},0)`)
+      .attr('transform', `translate(${margin.left-15},0)`)
     .append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", 6)

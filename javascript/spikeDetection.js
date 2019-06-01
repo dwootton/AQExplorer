@@ -111,7 +111,7 @@ class SpikeDetector {
       if (this.isEmpty(monitor.signalDetection) || !monitor.signalDetection) { //if it doesn't have any recordings, skip
         return;
       }
-      
+
       for (let i = 0; i < monitor.signalDetection.signals.length - 2; i++) { //for each measurment in the monitor
 
         if (monitor.pm25[i].pm25 > 60) { // monitor.signalDetection.signals[i][1] === 1 && parseInt(monitor.pm25[i].pm25) > 50 &&  && monitor.signalDetection.signals[i][1] === 1 ) { //if the signal value is 1 (ie there is a peak), signals is not offset at there is no
@@ -216,7 +216,7 @@ class SpikeDetector {
         bottom: 30,
         left: 10
       },
-      width = 200,
+      width = 325,
       barHeight = 35,
       barWidth = (width - margin.left - margin.right);
 
@@ -243,7 +243,7 @@ class SpikeDetector {
 
     this.root.eachBefore(function(node) {
       node.x = ++index * barHeight;
-      node.y = node.depth*10;
+      node.y = 10; //node.depth*10;
     });
 
     source.x0 = 0;

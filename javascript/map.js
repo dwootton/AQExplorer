@@ -242,7 +242,7 @@ class AQMap {
 
     let colorLegend = d3.legendColor()
       .labelFormat(d3.format(".0f"))
-      .cells(window.controller.pm25Domain)
+      .cells(window.controller.pm25Domain.slice(0, -1))
       //.labels(d3.legendHelpers.thresholdLabels)
       .scale(this.colorMap)
       .shapePadding(2)
@@ -254,6 +254,7 @@ class AQMap {
     let testLegend = d3.select('#pm25Legend')
       .attr('width', 100)
       .attr('height', 200)
+      .attr("transform","translate(10,10)")
       .append("g")
       .call(colorLegend);
 

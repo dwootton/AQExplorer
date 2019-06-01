@@ -3,9 +3,9 @@ class timeChartLegend {
     let boundingWidth = document.getElementById('map').offsetWidth;
     this.margin = {
       top: 0,
-      right: 10,
+      right: 35,
       bottom: 10,
-      left: 35
+      left: 30
     }
     this.svg = d3.select('#timeChartLegend').append('g').attr('transform','translate('+this.margin.left+','+this.margin.top+')');
 

@@ -22,7 +22,7 @@ class Selector {
     this.populateSensorList();
 
     $(()=> {
-
+      this.getAllData = false;
       /* Callback for when dates are selected on the picker */
       let callback = (start, end) => {
         // remove previously selected sensor from map
@@ -38,27 +38,29 @@ class Selector {
         this.endDate = new Date(end.format());
         console.log("about to change dates");
         window.controller.slider.changeDates();
-        this.getAllData = true;
+
         let that = this;
-        console.log(this.endDate.getTime()-this.startDate.getTime(), 4*24*60*60*1000)
-        if(this.endDate.getTime()-this.startDate.getTime() > 4*24*60*60*1000){
+        function hideElements(){
+          d3.selectAll('#slider').attr('display','none');
+          d3.selectAll('#sliderMetric').attr('display','none');
+          d3.selectAll('#sliderMetricLabel').attr('display','none');
+
+          d3.selectAll('#value-new-york-times').style('display','none');
+          d3.selectAll('.spike-selector').style('display','none');
+          that.oldSlider = window.controller.slider;
+          window.controller.slider = null;
+        }
+
+        if(this.getAllData && this.endDate.getTime()-this.startDate.getTime() > 4*24*60*60*1000){
           this.getAllData = false;
           alert('Only parts of the data will be rendered. Select a smaller date range to avoid this.')
           d3.select('#slider').transition(1000).attr("height","0");
           d3.select('#spikeSVG').transition(1000).attr("width","0").on("end", hideElements);
 
-          function hideElements(){
-            d3.selectAll('#slider').attr('display','none');
-            d3.selectAll('#sliderMetric').attr('display','none');
-            d3.selectAll('#sliderMetricLabel').attr('display','none');
 
-            d3.selectAll('#value-new-york-times').style('display','none');
-            d3.selectAll('.spike-selector').style('display','none');
-            that.oldSlider = window.controller.slider;
-            window.controller.slider = null;
-          }
 
         }
+
 
         if(this.getAllData){
           document.getElementById("overlay").style.display = "block";
@@ -99,6 +101,7 @@ class Selector {
         this.grabAllModelDataOld(window.controller.selectedDate);
         this.rendered = true;
 
+
         while(!d3.select('.close').empty()){
           d3.select('.close').dispatch('click');
         }
@@ -114,6 +117,10 @@ class Selector {
             this.selectedSensors =  this.selectedSensors.filter(e => e !== sensorID);
 
           });*/
+        }
+        if(!this.getAllData){
+          document.getElementById("overlay").style.display = "none";
+          hideElements();
         }
 
 
@@ -762,7 +769,6 @@ grabIndividualSensorData(selectedSensor){
     if(!this.getAllData){
       return;
     }
-    console.log(selectedDate,caller);
     window.controller.selectedDate = selectedDate;
     if(caller == "timeChart"){
       console.log(window.controller.slider.slider);
