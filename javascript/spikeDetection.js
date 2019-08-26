@@ -521,12 +521,12 @@ class SpikeDetector {
       console.log(d3.selectAll('#marker'+d.data.monitor))
       console.log('#marker'+d.data.monitor);
       d3.select('#marker'+d.data.monitor)
-        .dispatch("click");
+        .on("click")(d3.select('#marker'+d.data.monitor).data()[0]);
     } else {
       console.log(d3.selectAll('#marker'+d.data.id))
       console.log('#marker'+d.data.id);
       d3.select('#marker'+d.data.id)
-        .dispatch("click");
+        .on("click")(d3.select('#marker'+d.data.monitor).data()[0]);
     }
 
     if (d.children) {

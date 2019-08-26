@@ -20,12 +20,13 @@ class Selector {
     this.selectedSensors = [];
     this.averagedPM25 = [];
     this.populateSensorList();
-
+    this.callback = () => {};
     $(()=> {
       this.getAllData = false;
       /* Callback for when dates are selected on the picker */
       let callback = (start, end) => {
         // remove previously selected sensor from map
+        console.log(start,end);
         if(!d3.selectAll('#selected').empty()){
           window.controller.timeChartLegend.changeMapSelectedSensor();
           window.controller.selectedSensor = null;
@@ -33,9 +34,9 @@ class Selector {
 
         // Update timechart label
         /*$('#reportrange span').html(start.format('D MMMM YYYY') + ' - ' + end.format('D MMMM YYYY'));*/
-
-        this.startDate = new Date(start.format());
-        this.endDate = new Date(end.format());
+        console.log(start,end);
+        this.startDate = new Date(start/*.format()*/);
+        this.endDate = new Date(end/*.format()*/);
         console.log("about to change dates");
 
 
@@ -44,6 +45,7 @@ class Selector {
           d3.selectAll('#slider').attr('display','none');
           d3.selectAll('#sliderMetric').attr('display','none');
           d3.selectAll('#sliderMetricLabel').attr('display','none');
+          d3.selectAll('#sliderGroup').style('display','none');
 
           d3.selectAll('#value-new-york-times').style('display','none');
           d3.selectAll('.spike-selector').style('display','none');
@@ -67,6 +69,8 @@ class Selector {
             d3.selectAll('#slider').attr('display','block');
             d3.selectAll('#sliderMetric').attr('display','block');
             d3.selectAll('#sliderMetricLabel').attr('display','block');
+            d3.selectAll('#sliderGroup').style('display','block');
+
             d3.selectAll('#value-new-york-times').style('display','block');
             d3.selectAll('.spike-selector').style('display','block');
             if(that.oldSlider){
@@ -87,8 +91,8 @@ class Selector {
         }
 
 
-        window.controller.startDate = new Date(start.format());
-        window.controller.endDate = new Date(end.format());
+        window.controller.startDate = new Date(start/*.format()*/);
+        window.controller.endDate = new Date(end/*.format()*/);
 
         // select the middle timepoint as default render
         window.controller.selectedDate = new Date((this.startDate.getTime() + this.endDate.getTime()) / 2);
@@ -129,7 +133,7 @@ class Selector {
 
 
       };
-
+      this.callback = callback;
       /* Set up the time selector UI */
       $('input[name="datetimes"]').daterangepicker({
           timePicker: true,
@@ -382,10 +386,17 @@ grabIndividualSensorData(selectedSensor){
 
     /* Obtain the most recent values for each sensor */
 		let formattedTime = time.toISOString().slice(0,-5)+'Z'
+    console.log('before ',this.sensorSource);
+    if(this.sensorSource == undefined){
+      this.sensorSource = 'airu';
+    }
+    console.log('after ',this.sensorSource);
 		let url = "http://air.eng.utah.edu/dbapi/api/sensorsAtTime?sensorSource="+this.sensorSource+"&selectedTime=" + formattedTime;
+
     if(this.sensorSource == 'airu'){
       url = "http://air.eng.utah.edu/dbapi/api/sensorsAtTime?sensorSource=airU&selectedTime=" + formattedTime;
     }
+
     console.log("INSIDE REQUEST", time)
 		let req = fetch(url)
 			.then(function(response){
@@ -413,7 +424,7 @@ grabIndividualSensorData(selectedSensor){
       /* Update data and re-render map view */
 			this.allSensorsData = valuesFixedAttr;
 			this.updateSensorView();
-      console.log(this.newTime);
+      console.log(this.newTime,this.getAllData);
       if(this.newTime && this.getAllData){
 
         if(window.controller.spikeDetector){
@@ -421,10 +432,10 @@ grabIndividualSensorData(selectedSensor){
           window.controller.spikeDetector.removeSVG();
           window.controller.spikeDetector = null;
         }
-        console.log(valuesFixedAttr);
 
         console.log(valuesFixedAttr);
         this.gatherSensorDataForEntireTime(valuesFixedAttr);
+
         window.controller.spikeDetector = new SpikeDetector(valuesFixedAttr);
 
 
@@ -454,9 +465,11 @@ grabIndividualSensorData(selectedSensor){
    * @return {[type]} [description]
    */
   gatherSensorDataForEntireTime(sensorList) {
+    console.log(sensorList);
     this.grabModelDataForEntireRange();
     console.log(sensorList)
     this.sensorList = sensorList;
+
     let promises = [];
     let start = window.controller.startDate.toISOString().slice(0, -5) + "Z";
     let stop = window.controller.endDate.toISOString().slice(0, -5) + "Z";

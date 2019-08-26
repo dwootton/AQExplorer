@@ -51,11 +51,15 @@ function modeSelectionSetUp(){
 				let label = document.createElement('label');
 				label.innerHTML = modeTypes[i];
 				label.htmlFor = modeTypes[i];
+
 				innerDiv.appendChild(button);
 				innerDiv.appendChild(label);
 				metricMenu.appendChild(innerDiv);
-				innerDiv.onclick = (e)=>{
 
+				d3.select(button).style('cursor','pointer')
+				d3.select(label).style('cursor','pointer')
+
+				innerDiv.onclick = (e)=>{
 					let metric = e.toElement.value;
 					if(metric == window.controller.currentMode){
 						return;
@@ -66,6 +70,11 @@ function modeSelectionSetUp(){
 					} else {
 						window.controller.selector.getAllData = false;
 					}
+					console.log(window.controller.selector.getAllData,window.controller.selector.callback);
+					window.controller.selector.callback(new Date(window.controller.startDate), new Date(window.controller.endDate));
+					console.log(d3.select(innerDiv));
+					d3.select(innerDiv).property("checked", true);
+
 
 				}
 		}

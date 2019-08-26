@@ -16,14 +16,6 @@ class ModeSelector {
         let self = this;
 
         function update(){
-            /*
-            if(first){
-                d3.select('#chart').transition().duration(500).attr('class','shown');
-                d3.select('div #lineMap').transition().duration(500).attr('class','hidden');
-                first = false;
-                return;
-            }
-            */
 
 
             let status = document.getElementById("modeSwitch").checked; // False => Explorer, True => Navigator
@@ -74,7 +66,7 @@ class ModeSelector {
                     }
                 }
                 // Transition the other nodes from their previous condiitions.
-                
+
                 d3.selectAll("lineMaps").attr('WTFYRUStillHere_Like_This_should_be_free');
                 d3.select('div #lineMap').transition().duration(500).attr('class','hidden');
                 d3.select('#timeChartLegend').transition().duration(500).attr('class','shown');
