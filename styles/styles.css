@@ -184,6 +184,9 @@ a:focus {
   text-decoration: none;
   transition: all 0.3s;
 }
+.focus {
+  cursor:pointer!important;
+}
 
 .navbar {
   padding: 15px 10px;
@@ -418,7 +421,9 @@ a.article:hover {
   /*padding: 10px;
   margin: 10px;*/
 }
-
+.sensorButton{
+  cursor:pointer;
+}
 /* Sensor */
 .sensors,
 .sensors svg {
@@ -642,13 +647,19 @@ a.article:hover {
   width: 1350px;
 }
 
+input[name=datetimes] {
+    cursor:pointer;
+}
+
 #timeChartLegend {
   /*height: 35px;*/
   width: 1350px;
 }
-
+.brush{
+  cursor:move;
+}
 .zoom {
-  cursor: move;
+  cursor: pointer;
   fill: none;
   pointer-events: all;
 }

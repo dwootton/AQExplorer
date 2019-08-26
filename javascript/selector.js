@@ -79,15 +79,17 @@ class Selector {
             }
           }
 
-          if( this.endDate.getTime()-this.startDate.getTime() > 4*24*60*60*1000){
+          //If more than 4 days are selected, change mode to Longitudinal
+          if(this.endDate.getTime()-this.startDate.getTime() > 4*24*60*60*1000){
             this.getAllData = false;
+            d3.select('#radioLongitudinal').property('checked',true);
             alert('Only parts of the data will be rendered. Select a smaller date range to avoid this.')
+            
+            //d3.select('input[name="tool modes"]').on('click')();//.property("value");
             d3.select('#slider').transition(1000).attr("height","0");
             d3.select('#spikeSVG').transition(1000).attr("width","0").on("end", hideElements);
+
           }
-
-
-
         }
 
 
