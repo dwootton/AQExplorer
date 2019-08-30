@@ -67,7 +67,8 @@ function modeSelectionSetUp() {
         return;
       }
       window.controller.currentMode = metric;
-      if (window.controller.currentMode == "Drill-Down" && window.controller.selector.endDate.getTime() - window.controller.selector.startDate.getTime() < 4 * 24 * 60 * 60 * 1000) {
+
+			if (window.controller.currentMode == "Drill-Down" && window.controller.selector.endDate.getTime() - window.controller.selector.startDate.getTime() < 4 * 24 * 60 * 60 * 1000) {
         window.controller.selector.getAllData = true;
         d3.select('#radioDrill-Down').property('checked', true);
         console.log(metric);
