@@ -1,0 +1,702 @@
+
+#sliderMetric div {
+  float: left;
+  width: 100px;
+}
+
+/* Spinner
+    obtained from http://jsbin.com/roqakuxebo/1/edit?html,css,output
+*/
+.spinner {
+   position: absolute;
+   left: 46%;
+   top: 30%;
+   height:120px;
+   width:120px;
+   margin:0px auto;
+   -webkit-animation: rotation .6s infinite linear;
+   -moz-animation: rotation .6s infinite linear;
+   -o-animation: rotation .6s infinite linear;
+   animation: rotation .6s infinite linear;
+   border-left:6px solid rgba(0,174,239,.15);
+   border-right:6px solid rgba(0,174,239,.15);
+   border-bottom:6px solid rgba(0,174,239,.15);
+   border-top:6px solid rgba(0,174,239,.8);
+   border-radius:100%;
+}
+
+@-webkit-keyframes rotation {
+   from {-webkit-transform: rotate(0deg);}
+   to {-webkit-transform: rotate(359deg);}
+}
+@-moz-keyframes rotation {
+   from {-moz-transform: rotate(0deg);}
+   to {-moz-transform: rotate(359deg);}
+}
+@-o-keyframes rotation {
+   from {-o-transform: rotate(0deg);}
+   to {-o-transform: rotate(359deg);}
+}
+@keyframes rotation {
+   from {transform: rotate(0deg);}
+   to {transform: rotate(359deg);}
+}
+
+/* Overlay Styles
+from: https://www.w3schools.com/howto/howto_css_overlay.asp
+*/
+
+#overlay {
+  position: fixed; /* Sit on top of the page content */
+  display: block; /* Hidden by default */
+  width: 100vw; /* Full width (cover the whole page) */
+  height: 100vh; /* Full height (cover the whole page) */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255,255,255,0.8); /* White background with opacity */
+  z-index: 9999999999999999999999999999999999999999999999999999999; /* Specify a stack order in case you're using a different order for other elements */
+  /* cursor: pointer; Add a pointer on hover */
+}
+
+#overlay-text{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 50px;
+  color: black;
+  transform: translate(-50%,-50%);
+  -ms-transform: translate(-50%,-50%);
+}
+
+/* ---------------------------------------------------
+    Switch Styles
+		obtained  in part from:
+		https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_switch
+----------------------------------------------------- */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 200px;
+  height: 40px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.hidden {
+  display: none;
+}
+
+.shown {
+  display: block;
+}
+
+#currentMode {
+  font-size: 24px;
+}
+
+#container {
+  margin-left: 155px;
+  margin-right: 55px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 32px;
+  width: 60px;
+  top: 4px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked+.slider {
+  background-color: #006837;
+}
+
+input:focus+.slider {
+  box-shadow: 0 0 1px #006837;
+}
+
+input:checked+.slider:before {
+  -webkit-transform: translateX(130px);
+  -ms-transform: translateX(130px);
+  transform: translateX(130px);
+}
+
+#buttonUL {
+  margin-left: 650px;
+}
+
+/* Slider code  */
+/* ---------------------------------------------------
+    navBar Styles
+----------------------------------------------------- */
+.text-center {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+#sidebarCollapse {
+  background-color: #006837;
+  border-color: #014c29;
+}
+
+@import "https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700";
+
+body {
+  font-family: sans-serif;
+  background: #F5F5F5;
+}
+
+p {
+  font-family:  sans-serif;
+  font-size: 1.1em;
+  font-weight: 300;
+  line-height: 1.7em;
+  color: #999;
+}
+
+a,
+a:hover,
+a:focus {
+  color: inherit;
+  text-decoration: none;
+  transition: all 0.3s;
+}
+.focus {
+  cursor:pointer!important;
+}
+
+.navbar {
+  padding: 15px 10px;
+  background: #fff;
+  border: none;
+  border-radius: 0;
+  margin-bottom: 20px;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-btn {
+  box-shadow: none;
+  outline: none !important;
+  border: none;
+}
+
+/* ---------------------------------------------------
+    SIDEBAR STYLE
+----------------------------------------------------- */
+
+input[name="datetimes"] {
+  width: 25vw;
+  top: 0;
+  left: 500px;
+  height: 5vh;
+  background: #006837;
+  outline: none;
+  border: none;
+  position: fixed;
+  /*padding-left: 2vw;
+  padding-right: 2vw;*/
+  color: white;
+  font-weight:bold;
+  text-align: center;
+  margin-bottom: 2vh;
+  z-index: 1000;
+  border-bottom-left-radius: 25px;
+  border-bottom-right-radius: 25px;
+
+
+  /* Drop Shadow */
+  -webkit-box-shadow: 0px 1px 2px 3px #444;  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
+  -moz-box-shadow:    0px 1px 2px 3px #444;  /* Firefox 3.5 - 3.6 */
+  box-shadow:         0px 1px 2px 3px #444;  /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
+
+ }
+
+ #modeSelector {
+   width: 7.5vw;
+   left: 92.5vw;
+   background: whitesmoke;
+   height: 85px;
+   z-index: 1000;
+   position: fixed;
+   top: 0;
+   padding: 5px;
+   /* Drop Shadow */
+   -webkit-box-shadow: 0px 1px 2px 1px #aaa;  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
+   -moz-box-shadow:    0px 1px 2px 1px #aaa;  /* Firefox 3.5 - 3.6 */
+   box-shadow:         0px 1px 2px 1px #aaa;  /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
+ }
+
+ .gm-style-mtc {
+  display: none;
+}
+/*
+#sidebar {
+  width: 250px;
+  position: fixed;
+  top: 0;
+  left: -250px;
+  height: 100vh;
+  z-index: 999;
+  background: #7386D5;
+  color: #fff;
+  transition: all 0.3s;
+  overflow-y: scroll;
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.2);
+}
+
+#sidebar.active {
+  left: 0;
+}
+
+#dismiss {
+  width: 35px;
+  height: 35px;
+  line-height: 35px;
+  text-align: center;
+  background: #7386D5;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+  -webkit-transition: all 0.3s;
+  -o-transition: all 0.3s;
+  transition: all 0.3s;
+}
+
+#dismiss:hover {
+  background: #fff;
+  color: #7386D5;
+}
+
+.overlay {
+  display: none;
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 998;
+  opacity: 0;
+  transition: all 0.5s ease-in-out;
+}
+
+.overlay.active {
+  display: block;
+  opacity: 1;
+}
+
+#sidebar .sidebar-header {
+  padding: 20px;
+  background: #6d7fcc;
+}
+
+#sidebar ul.components {
+  padding: 20px 0;
+  border-bottom: 1px solid #47748b;
+}
+
+#sidebar ul p {
+  color: #fff;
+  padding: 10px;
+}
+
+#sidebar ul li a {
+  padding: 10px;
+  font-size: 1.1em;
+  display: block;
+}
+
+#sidebar ul li a:hover {
+  color: #7386D5;
+  background: #fff;
+}
+
+#sidebar ul li.active>a,
+a[aria-expanded="true"] {
+  color: #fff;
+  background: #6d7fcc;
+}
+
+a[data-toggle="collapse"] {
+  position: relative;
+}
+
+.dropdown-toggle::after {
+  display: block;
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+}
+
+ul ul a {
+  font-size: 0.9em !important;
+  padding-left: 30px !important;
+  background: #6d7fcc;
+}
+
+ul.CTAs {
+  padding: 20px;
+}
+
+ul.CTAs a {
+  text-align: center;
+  font-size: 0.9em !important;
+  display: block;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
+
+a.download {
+  background: #fff;
+  color: #7386D5;
+}
+
+a.article,
+a.article:hover {
+  background: #6d7fcc !important;
+  color: #fff !important;
+}
+*/
+
+/* ---------------------------------------------------
+    interpolatedChart Styles
+----------------------------------------------------- */
+#lineMap {
+  height: 300px;
+  width: 930px;
+  border: 1px dashed #999;
+  overflow-y: scroll;
+  overflow-x: scroll;
+  background: whitesmoke
+}
+
+.wrapper{
+  margin-top: 1vh;
+  margin-bottom: 1vh;
+  margin-left:  7vw;
+  margin-right: 7vw;
+}
+/* ---------------------------------------------------
+    map Styles
+----------------------------------------------------- */
+#map {
+  margin:none;
+  height: 425px;
+  width: 1070px;
+  display: inline-block;
+}
+.gm-style-cc { display:none; }
+#radioButton{
+  font: sans-serif
+  padding:10px;
+  background: rgba(240, 240, 240, 0.8);
+}
+
+#mapLegend {
+  font-family:  sans-serif;
+  background: #fff;
+  /*padding: 10px;
+  margin: 10px;*/
+}
+.sensorButton{
+  cursor:pointer;
+}
+/* Sensor */
+.sensors,
+.sensors svg {
+  position: absolute;
+}
+
+.sensors svg {
+  width: 24px;
+  height: 24px;
+  font: 10px sans-serif;
+}
+
+.sensors svg .selected {
+  width: 45px;
+  height: 45px;
+}
+
+.selected svg {
+  width: 45px;
+  height: 45px;
+}
+
+#selected {
+  width: 45px;
+  height: 45px;
+}
+
+.marker {
+  z-index: 5;
+}
+
+/* Tool Tip */
+.mapTooltip {
+  position: absolute;
+  text-align: center;
+  width: 60px;
+  height: 35px;
+  padding: 2px;
+  font: 12px sans-serif;
+  background: whitesmoke;
+  border: 0px;
+  /*border-radius: 8px;*/
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.mapTooltip::after {
+  /* Makes a triangle at the boottom of tooltip*/
+  content: " ";
+  position: absolute;
+  top: 100%;
+  /* At the bottom of the tooltip */
+  left: 40%;
+  margin-left: -5px;
+  border-width: 9px;
+  border-style: solid;
+  border-color: whitesmoke transparent transparent transparent;
+}
+
+/* The Path Nodes from interpChart */
+.pathNodes,
+.pathNodes svg {
+  position: absolute;
+}
+
+.pathNodes svg {
+  width: 24px;
+  height: 24px;
+  font: 10px sans-serif;
+  z-index: 100000000000000000000;
+}
+
+/* The Path highlighter from interpChart */
+.pathHighlight,
+.pathHighlight svg {
+  position: absolute;
+}
+
+.pathHighlight {
+  width: 30px;
+  height: 30px;
+  font: 10px sans-serif;
+  z-index: 100000000000000000000;
+}
+
+/* The legend of the map */
+#pm25Legend {
+  width: 225px;
+  display: inline-block;
+  margin-left: -20px;
+  font-size: .9em;
+}
+/* ---------------------------------------------------
+    Slider
+----------------------------------------------------- */
+#slider {
+  height: 100px;
+  width: 1365px;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+#value-new-york-times{
+  text-align: left;
+  margin-left: 10px;
+  margin-right: auto;
+}
+
+.ticks {
+  font: 10px sans-serif;
+}
+
+.track,
+.track-inset,
+.track-overlay {
+  stroke-linecap: round;
+}
+
+.track {
+  stroke: #000;
+  stroke-opacity: 0.3;
+  stroke-width: 10px;
+}
+
+.track-inset {
+  stroke: #ddd;
+  stroke-width: 8px;
+}
+
+.track-overlay {
+  pointer-events: stroke;
+  stroke-width: 50px;
+  stroke: transparent;
+  cursor: crosshair;
+}
+
+.handle {
+  fill: #fff;
+  stroke: #000;
+  stroke-opacity: 0.5;
+  stroke-width: 1.25px;
+}
+/* ---------------------------------------------------
+    Spike Selector Styles
+----------------------------------------------------- */
+.spike-selector
+{
+    height: 425px;
+    width: 275px;
+    overflow: scroll;
+    display:inline-block;
+}
+
+.spikes {
+      height: 30px;
+      width: 325px;
+      margin: 10 auto;
+      padding-right: 10px;
+  }
+
+
+.spikes rect {
+  cursor: pointer;
+  fill: #fff;
+  fill-opacity: 0.5;
+  width: 245px;
+  stroke: #aaa;
+  stroke-width: 1.5px;
+}
+
+.spikes .primarytext {
+  font: 14px sans-serif;
+  pointer-events: none;
+}
+
+.spikes .secondarytext  {
+  font: 10px sans-serif;
+  color: darkgrey;
+}
+.spike-selector form {
+  margin-left:0px;
+}
+.spike-selector form input {
+  width:230px;
+  border-width: 0px;
+  margin-left:9px;
+}
+
+.spike-selector form button {
+  border-width: 0px;
+}
+/* ---------------------------------------------------
+    timeChart Styles
+----------------------------------------------------- */
+#timeChartGroup{
+  vertical-align: top;
+  position: relative;
+
+}
+
+.svg-container {
+    position: relative;
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%; /* aspect ratio*/
+    vertical-align: top;
+    overflow: hidden;
+}
+
+.svg-content-responsive {
+    display: inline-block;
+    position: absolute;
+    top: 10px;
+    left: 0;
+}
+
+
+
+#timeChart {
+  height: 255px;
+  width: 1350px;
+}
+
+input[name=datetimes] {
+    cursor:pointer;
+}
+
+#timeChartLegend {
+  /*height: 35px;*/
+  width: 1350px;
+}
+.brush{
+  cursor:move;
+}
+.zoom {
+  cursor: pointer;
+  fill: none;
+  pointer-events: all;
+}
+
+.sensorLine {
+  fill: none;
+  clip-path: url(#clip);
+}
+
+.modelLine {
+  stroke-dasharray: 2;
+  fill: none;
+  clip-path: url(#clip);
+}
+
+.HMtooltip {
+  position: absolute;
+  text-align: center;
+  width: 65px;
+  height: 70px;
+  padding: 2px;
+  font: 12px sans-serif;
+  background: whitesmoke;
+  border: 0px;
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.HMtooltip::after {
+  /* Makes a triangle at the boottom of tooltip*/
+  content: " ";
+  position: absolute;
+  top: 100%;
+  /* At the bottom of the tooltip */
+  left: 40%;
+  margin-left: -5px;
+  border-width: 9px;
+  border-style: solid;
+  border-color: whitesmoke transparent transparent transparent;
+}
