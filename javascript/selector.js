@@ -889,8 +889,11 @@ grabIndividualSensorData(selectedSensor){
     }
     window.controller.selectedDate = selectedDate;
     if(caller == "timeChart"){
-      console.log(window.controller.slider.slider);
+	if(window.controller.slider && window.controller.slider.slider){
+		console.log(window.controller.slider.slider);
       window.controller.slider.slider.value(selectedDate);
+	}
+      
     } else {
       try{
         window.controller.timeChart.updateSlider(selectedDate);
