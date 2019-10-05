@@ -49,8 +49,8 @@ class Selector {
 
           d3.selectAll('#value-new-york-times').style('display','none');
           d3.selectAll('.spike-selector').style('display','none');
-          that.oldSlider = window.controller.slider;
-          window.controller.slider = null;
+          //that.oldSlider = window.controller.slider;
+          //window.controller.slider = null;
         }
 
 
@@ -73,10 +73,9 @@ class Selector {
 
             d3.selectAll('#value-new-york-times').style('display','block');
             d3.selectAll('.spike-selector').style('display','block');
-            if(that.oldSlider){
-              window.controller.slider = that.oldSlider;
-              window.controller.slider.changeDates();
-            }
+            
+            window.controller.slider.changeDates();
+            
           }
 
           //If more than 4 days are selected, change mode to Longitudinal
